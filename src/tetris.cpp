@@ -1,4 +1,3 @@
-#include <algorithm>
 #include <cstddef>
 #include <cstring>
 #include <fstream>
@@ -25,6 +24,7 @@
 
 #include "field.h"
 #include "tetrominoe.h"
+#include "scoreboard.h"
 
 #define TARGET_FPS 60
 #define FRAME_DELAY (1000 / TARGET_FPS)
@@ -35,14 +35,7 @@
 #define PIECE_DOWN_SCORE 25
 #define LINE_FILLED_SCORE 50
 
-// Constants
-static const char* highScoresFile = "highscores.txt";
-
-// structs
-typedef struct {
-    std::string text;
-    SDL_Color color;
-} HighScoreText;
+//extern const char* highScoresFile;
 
 // Variables
 static bool running = false;
@@ -57,63 +50,7 @@ static std::string scoreText = "";
 static unsigned int piecesCnt = 0;
 static bool filledAnimation = false;
 static std::vector<int> highScores;
-
 static HighScoreText scoreBoard[10];
-
-// Update the scoreboard
-void updateScoreBoard(HighScoreText* sb, std::vector<int> scores) {
-    for(int i = 0; i < 10; i++) {
-        std::ostringstream ss;
-        ss.str("");
-        ss << std::setw(8) << scores[i];
-        sb->text = ss.str();
-        if(i < 3) {
-            sb->color = {255, 0, 0, 255};
-        } else {
-            sb->color = {75, 175, 125, 255};
-        }
-        sb++;
-    }
-}
-
-// Write to highscore file
-void writeToFile(std::string fileName, std::vector<int>& highScores)
-{
-    std::ofstream fs;
-    fs.open(fileName);
-    if(!fs.is_open()) {
-        return;
-    }
-
-    for(auto& hi : highScores) {
-        fs << hi << std::endl;
-    }
-    fs.flush();
-    fs.close();
-    updateScoreBoard(scoreBoard, highScores);
-}
-
-// Read from highscore file
-void readFromFile(std::string fileName, std::vector<int>& highScores)
-{
-    std::ifstream fs;
-    fs.open(fileName);
-    if(!fs.is_open()) {
-        highScores = std::vector<int>(10 , 0);
-        writeToFile(fileName, highScores);
-        return;
-    }
-
-    int i = 0;
-    int val = 0;
-    highScores.clear();
-    while(fs >> val) {
-        highScores.push_back(val);
-    }
-    std::sort(highScores.begin(), highScores.end(), [](int a, int b) { return a > b; });
-    updateScoreBoard(scoreBoard, highScores);
-    fs.close();
-}
 
 // Check for collissions between current shape and field
 // The field includes and the stacked pieces
@@ -268,7 +205,8 @@ void initGame(PlayField& f, Tetrominoe& cur, Tetrominoe& next) {
     filledAnimation = false;
 
     // GetHighScores
-    readFromFile(highScoresFile, highScores);
+    readFromFile(highScores);
+    updateScoreBoard(scoreBoard, highScores);
 }
 
 int main(int argc, char** argv)
@@ -391,7 +329,7 @@ int main(int argc, char** argv)
                 }
             }
 
-            // We are shhowing filled lines animation
+            // We are showing filled lines animation
             unsigned long filledAnimationTicks;
             if(filledAnimation) {
                 render = true;
@@ -451,7 +389,8 @@ int main(int argc, char** argv)
                                     highScores[j] = highScores[j-1];
                                 }
                                 highScores[i] = playerScore;
-                                writeToFile(highScoresFile, highScores);
+                                writeToFile(highScores);
+                                updateScoreBoard(scoreBoard, highScores);
                                 break;
                             }
                         }
