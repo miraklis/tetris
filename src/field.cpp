@@ -49,6 +49,9 @@ void updateField(PlayField* f)
                     case '6':
                         vertColor = {.r = 0.3f, .g = 0.2f, .b = 0.9f, .a = 1.0f};
                         break;
+                    case '=':
+                        vertColor = {.r = 1.0f, .g = 1.0f, .b = 1.0f, .a = 1.0f};
+                        break;
                     default:
                         vertColor = STACK_COLOR;
                         break;

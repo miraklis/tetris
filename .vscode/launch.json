@@ -1,0 +1,23 @@
+{
+    "version": "0.2.0",
+    "configurations": [        
+        {
+            "name": "LLDB Launch Debug",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceFolder}/Debug/tetris",
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "preLaunchTask": "Build Debug",
+        },
+        {
+            "name": "LLDB Launch Release",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceFolder}/Release/tetris",
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "preLaunchTask": "Build Release",
+        }
+    ]
+}

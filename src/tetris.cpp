@@ -39,6 +39,7 @@ static unsigned long lastTick;
 static unsigned long lastStepTick;
 static std::string scoreText = "";
 static unsigned int piecesCnt = 0;
+static bool filledAnimation = false;
 
 bool checkCollissions(Tetrominoe* t, PlayField* f, int offsetX, int offsetY, bool rotated)
 {
@@ -106,6 +107,55 @@ bool checkCollissions(Tetrominoe* t, PlayField* f, int offsetX, int offsetY, boo
     return false; // No collissions
 }
 
+void removeFilledLines(PlayField* f) {
+    int bottom = FIELD_HEIGHT - 1;
+    int lineSize = FIELD_WIDTH - 2;
+    std::string emptyLine(lineSize, '.');
+    std::string filledLine(lineSize, '=');
+    while(bottom > 0) {
+        bottom--;
+        std::string line = f->fieldLayout.substr((bottom * FIELD_WIDTH) + 1, lineSize);
+        if(line == filledLine) {
+            int yy = bottom;
+            while(yy > 1) {
+                yy--;
+                std::string prevLine = f->fieldLayout.substr((yy * FIELD_WIDTH) + 1, lineSize);
+                f->fieldLayout.replace(((yy + 1) * FIELD_WIDTH) + 1, lineSize, prevLine);
+            }
+            f->fieldLayout.replace(1, lineSize, emptyLine);
+            updateField(f);
+            bottom++;
+        }
+    }
+}
+
+int checkForFilledLines(PlayField* f, Tetrominoe* t)
+{
+    int result = 0;
+    int top = t->wy;
+    int bottom = (t->wy + 4) > FIELD_HEIGHT - 1? FIELD_HEIGHT - 1 : (t->wy + 4);
+    int lineSize = FIELD_WIDTH - 2;
+    std::string emptyLine(lineSize, '.');
+    std::string filledLine(lineSize, '=');
+    while(bottom > 0 && bottom >= top) {
+        bottom--;
+        std::string line = f->fieldLayout.substr((bottom * FIELD_WIDTH) + 1, lineSize);
+        if(line.find(".") == std::string::npos) {
+            result++;
+            f->fieldLayout.replace((bottom * FIELD_WIDTH) + 1, lineSize, filledLine);
+        }
+    }
+    if(result == 4)
+      result += 4;
+    if(result == 3)
+        result += 2;
+    if(result == 2)
+        result++;
+    return result * LINE_FILLED_SCORE;    
+}
+
+
+#if 0
 int checkForLines(PlayField* f, Tetrominoe* t)
 {
     int result = 0;
@@ -138,6 +188,7 @@ int checkForLines(PlayField* f, Tetrominoe* t)
         result++;
     return result * LINE_FILLED_SCORE;
 }
+#endif
 
 void initGame(PlayField& f, Tetrominoe& cur, Tetrominoe& next) {
     const float fieldX = 20.0f;
@@ -171,7 +222,7 @@ void initGame(PlayField& f, Tetrominoe& cur, Tetrominoe& next) {
     playerScore = 0;
     scoreText = "SCORE: 0";
     piecesCnt = 0;
-
+    filledAnimation = false;
 }
 
 int main(int argc, char** argv)
@@ -274,23 +325,39 @@ int main(int argc, char** argv)
 
         if(!gameOver) {
             // Update gameSpeed
-            if(piecesCnt >= 10) {
-                gameSpeed *= 0.8f;
-                if(gameSpeed < 0.2f)
-                    gameSpeed = 0.2f;
+            if(piecesCnt >= 20) {
+                gameSpeed *= 1.5f;
+                if(gameSpeed > 20.0f)
+                    gameSpeed = 20.0f;
                 piecesCnt = 0;
             }
             // If step time passed, move down a block
             unsigned long stepTicks = SDL_GetTicks();
-            if(stepTicks - lastStepTick >= (1000.0f * gameSpeed)) {
-                if(!checkCollissions(&currentPiece, &pField, 0, 1,false)) {
-                    moveTetrominoe(0, 1, &currentPiece);
-                    lastStepTick = stepTicks;
-                } else {
-                    pieceOnStack = true;
+            if(stepTicks - lastStepTick >= (1000.0f / gameSpeed)) {
+                if(currentPiece.isAlive) {
+                    if(!checkCollissions(&currentPiece, &pField, 0, 1,false)) {
+                        moveTetrominoe(0, 1, &currentPiece);
+                        lastStepTick = stepTicks;
+                    } else {
+                        pieceOnStack = true;
+                    }
+                    render = true;
                 }
-                render = true;
             }
+
+            // We are shhowing filled lines animation
+            unsigned long filledAnimationTicks;
+            if(filledAnimation) {
+                render = true;
+                //currentPiece.isAlive = false;
+                pieceOnStack = false;
+                if(SDL_GetTicks() - filledAnimationTicks >= 120.0f) {
+                    filledAnimation = false;
+                    removeFilledLines(&pField);
+                    currentPiece.isAlive = true;
+                }
+            }
+
             // Piece hit the bottom stack
             if(pieceOnStack) {
                 pieceOnStack = false;
@@ -312,6 +379,22 @@ int main(int argc, char** argv)
                 }
                 updateField(&pField);
                 piecesCnt++;
+
+
+                // Check for lines filled
+                int scoreFromLines = 0;
+                scoreFromLines = checkForFilledLines(&pField, &currentPiece);
+                if(scoreFromLines > 0) {
+                    playerScore += scoreFromLines;
+                    filledAnimationTicks = SDL_GetTicks();
+                    filledAnimation = true;
+                    updateField(&pField);
+                } else {
+                    playerScore += PIECE_DOWN_SCORE;
+                }
+                scoreText = "SCORE: " + std::to_string(playerScore);
+
+#if 0                
                 // Check for lines filled
                 int scoreFromLines = checkForLines(&pField, &currentPiece);
                 if(scoreFromLines > 0)
@@ -319,6 +402,7 @@ int main(int argc, char** argv)
                 else
                     playerScore += PIECE_DOWN_SCORE;
                 scoreText = "SCORE: " + std::to_string(playerScore);
+#endif                
                 // Check for Game Over
                 std::string firstfieldLine = pField.fieldLayout.substr((3 * FIELD_WIDTH), FIELD_WIDTH);
                 if(firstfieldLine.find("0") != std::string::npos || firstfieldLine.find("1") != std::string::npos ||
