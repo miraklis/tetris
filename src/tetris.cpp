@@ -154,42 +154,6 @@ int checkForFilledLines(PlayField* f, Tetrominoe* t)
     return result * LINE_FILLED_SCORE;    
 }
 
-
-#if 0
-int checkForLines(PlayField* f, Tetrominoe* t)
-{
-    int result = 0;
-    int top = t->wy;
-    int bottom = (t->wy + 4) > FIELD_HEIGHT - 1? FIELD_HEIGHT - 1 : (t->wy + 4);
-    int lineSize = FIELD_WIDTH - 2;
-    std::string emptyLine(lineSize, '.');
-    while(bottom > 0 && bottom >= top) {
-        bottom--;
-        std::string line = f->fieldLayout.substr((bottom * FIELD_WIDTH) + 1, lineSize);
-        if(line.find(".") == std::string::npos) {
-            int yy = bottom;
-            while(yy > 1) {
-                yy--;
-                std::string prevLine = f->fieldLayout.substr((yy * FIELD_WIDTH) + 1, lineSize);
-                f->fieldLayout.replace(((yy + 1) * FIELD_WIDTH) + 1, lineSize, prevLine);
-            }
-            f->fieldLayout.replace(1, lineSize, emptyLine);
-            updateField(f);
-            result++;
-            bottom++;
-        }
-    }
-
-    if(result == 4)
-      result += 4;
-    if(result == 3)
-        result += 2;
-    if(result == 2)
-        result++;
-    return result * LINE_FILLED_SCORE;
-}
-#endif
-
 void initGame(PlayField& f, Tetrominoe& cur, Tetrominoe& next) {
     const float fieldX = 20.0f;
     const float fieldY = 100.0f;
@@ -379,8 +343,6 @@ int main(int argc, char** argv)
                 }
                 updateField(&pField);
                 piecesCnt++;
-
-
                 // Check for lines filled
                 int scoreFromLines = 0;
                 scoreFromLines = checkForFilledLines(&pField, &currentPiece);
@@ -393,16 +355,6 @@ int main(int argc, char** argv)
                     playerScore += PIECE_DOWN_SCORE;
                 }
                 scoreText = "SCORE: " + std::to_string(playerScore);
-
-#if 0                
-                // Check for lines filled
-                int scoreFromLines = checkForLines(&pField, &currentPiece);
-                if(scoreFromLines > 0)
-                    playerScore += scoreFromLines;
-                else
-                    playerScore += PIECE_DOWN_SCORE;
-                scoreText = "SCORE: " + std::to_string(playerScore);
-#endif                
                 // Check for Game Over
                 std::string firstfieldLine = pField.fieldLayout.substr((3 * FIELD_WIDTH), FIELD_WIDTH);
                 if(firstfieldLine.find("0") != std::string::npos || firstfieldLine.find("1") != std::string::npos ||
