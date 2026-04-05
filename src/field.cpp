@@ -1,8 +1,11 @@
-#include "field.h"
+#include <cstddef>
+
 #include <SDL3/SDL_gpu.h>
 #include <SDL3/SDL_pixels.h>
 #include <SDL3/SDL_stdinc.h>
-#include <cstddef>
+
+#include "field.h"
+#include "tetrominoe.h"
 
 void updateField(PlayField* f)
 {
@@ -129,4 +132,53 @@ void drawField(SDL_Renderer* renderer, PlayField* f)
 {
     size_t vertSize = f->vertices.size();
     SDL_RenderGeometry(renderer, NULL, f->vertices.data(), vertSize, NULL, 0);
+}
+
+// Check for filled lines (flashing '=') and remove them
+void removeFilledLines(PlayField* f) {
+    int bottom = FIELD_HEIGHT - 1;
+    int lineSize = FIELD_WIDTH - 2;
+    std::string emptyLine(lineSize, '.');
+    std::string filledLine(lineSize, '=');
+    while(bottom > 0) {
+        bottom--;
+        std::string line = f->fieldLayout.substr((bottom * FIELD_WIDTH) + 1, lineSize);
+        if(line == filledLine) {
+            int yy = bottom;
+            while(yy > 1) {
+                yy--;
+                std::string prevLine = f->fieldLayout.substr((yy * FIELD_WIDTH) + 1, lineSize);
+                f->fieldLayout.replace(((yy + 1) * FIELD_WIDTH) + 1, lineSize, prevLine);
+            }
+            f->fieldLayout.replace(1, lineSize, emptyLine);
+            updateField(f);
+            bottom++;
+        }
+    }
+}
+
+// Check if there is filled lines and respond with score from lines
+int checkForFilledLines(PlayField* f, Tetrominoe* t)
+{
+    int result = 0;
+    int top = t->wy;
+    int bottom = (t->wy + 4) > FIELD_HEIGHT - 1? FIELD_HEIGHT - 1 : (t->wy + 4);
+    int lineSize = FIELD_WIDTH - 2;
+    std::string emptyLine(lineSize, '.');
+    std::string filledLine(lineSize, '=');
+    while(bottom > 0 && bottom >= top) {
+        bottom--;
+        std::string line = f->fieldLayout.substr((bottom * FIELD_WIDTH) + 1, lineSize);
+        if(line.find(".") == std::string::npos) {
+            result++;
+            f->fieldLayout.replace((bottom * FIELD_WIDTH) + 1, lineSize, filledLine);
+        }
+    }
+    if(result == 4)
+      result += 4;
+    if(result == 3)
+        result += 2;
+    if(result == 2)
+        result++;
+    return result;// * LINE_FILLED_SCORE;
 }

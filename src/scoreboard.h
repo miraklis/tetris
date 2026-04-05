@@ -8,12 +8,12 @@
 #define MAX_SCORES 10
 
 typedef struct {
-    std::string text;
-    SDL_Color color;
-} HighScoreText;
+    std::vector<int> scores;
+} ScoreBoard;
 
-void updateScoreBoard(HighScoreText* sb, std::vector<int> scores);
-void writeToFile(std::vector<int>& highScores);
-void readFromFile(std::vector<int>& highScores);
+void writeToFile(ScoreBoard& sb);
+void readFromFile(ScoreBoard& sb);
+void addScore(ScoreBoard& sb, int score);
+void drawScoreBoard(SDL_Renderer* renderer, ScoreBoard* sb);
 
 #endif

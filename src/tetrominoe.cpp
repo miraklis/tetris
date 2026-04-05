@@ -261,3 +261,71 @@ void rotateLayout(std::string* layout) {
         for(int j=0; j<4; j++)
             (*layout)[(i * 4) + j] = s[12 + i - (j * 4)]; // rotate 90 degrees CW
 }
+
+// Check for collissions between current shape and field
+// The field includes and the stacked pieces
+bool checkCollissions(Tetrominoe* t, PlayField* f, int offsetX, int offsetY, bool rotated)
+{
+    int fx = t->wx + offsetX;
+    int sx = t->wx + offsetX;
+    int y = t->wy + offsetY;
+
+    // Prepare the field mask
+    std::string fieldMask = "";
+    if(fx < 0) {
+        fx = 0;
+    }
+    if(fx > FIELD_WIDTH - 4) {
+        fx = FIELD_WIDTH - 4;
+    }
+
+    int cnt = 0;
+    while(y < FIELD_HEIGHT && cnt < 4) {
+        fieldMask.append(f->fieldLayout.substr((y * FIELD_WIDTH) + fx, 4));
+        cnt++;
+        y++;
+    }
+
+    // Prepare the shape mask    
+    std::string shapeMask = t->shapeLayout;
+    if(rotated)
+        rotateLayout(&shapeMask);
+
+    // In case shape's mask is outside the left/right field limits
+    // update the columns of the masks to be checked
+    int sc = 0;
+    int ec = 4;
+    int foffset = 0;
+    if(sx < 0) {
+        sc = -sx;
+        ec = 4;
+        foffset = sx;
+    }
+    if(sx > FIELD_WIDTH -4) {
+        sc = 0;
+        ec = FIELD_WIDTH - sx;
+        foffset = 4 - (FIELD_WIDTH - sx);
+    }
+    // Iterate the two masks to check for collission
+    for(int r=0; r < 4; r++) {
+        for(int c=sc; c < ec; c++) {
+            if(shapeMask[(r * 4) + c] == 'X' && fieldMask[(r * 4) + c + foffset] != '.') {
+                if(rotated) {
+                    // Make the piece move by 1 and check again
+                    Tetrominoe rt = *t;
+                    rotateLayout(&rt.shapeLayout);
+                    int step = c >= 2 ? -1 : 1;
+                    if(!checkCollissions(&rt, f, step, 0, false)) {
+                        moveTetrominoe(step, 0, t);
+                        return false;
+                    } else {
+                        return true;
+                    }
+                } else {
+                    return true; // There is a collission
+                }
+            }
+        }
+    }
+    return false; // No collissions
+}

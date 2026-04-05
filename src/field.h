@@ -13,6 +13,8 @@
 #define STACK_COLOR {0.5f, 0.5f, 0.5f, 1.0f}
 #define START_FIELD_ROW 4
 
+struct sTetrominoe;
+
 typedef struct {
     float x, y;
     std::string fieldLayout;
@@ -22,5 +24,7 @@ typedef struct {
 PlayField createField(float x = 0.0f, float y = 0.0f);
 void drawField(SDL_Renderer* renderer, PlayField* f);
 void updateField(PlayField* f);
+void removeFilledLines(PlayField* f);
+int checkForFilledLines(PlayField* f, sTetrominoe* t);
 
 #endif // FIELD_H

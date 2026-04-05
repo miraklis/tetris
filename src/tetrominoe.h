@@ -23,7 +23,7 @@ typedef enum {
     TT_Count
 } TetrominoeType;
 
-typedef struct {
+typedef struct sTetrominoe {
     int wx, wy;
     float x,y;
     bool isAlive;
@@ -33,7 +33,6 @@ typedef struct {
     TetrominoeType type;
 } Tetrominoe;
 
-
 Tetrominoe createTetrominoe(TetrominoeType type);
 void attachTetrominoeToField(Tetrominoe* t, PlayField* f, int x = 0, int y = 0);
 void moveTetrominoe(int x, int y, Tetrominoe* t);
@@ -41,5 +40,6 @@ void placeTetrominoe(Tetrominoe* t, float x, float y);
 void rotateTetrominoe(Tetrominoe* t);
 void drawTetrominoe(SDL_Renderer* renderer, Tetrominoe* t);
 void rotateLayout(std::string* layout);
+bool checkCollissions(Tetrominoe* t, PlayField* f, int offsetX, int offsetY, bool rotated);
 
 #endif // TETROMINOE_H
