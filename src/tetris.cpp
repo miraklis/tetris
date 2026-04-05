@@ -1,9 +1,15 @@
+#include <algorithm>
+#include <cstddef>
 #include <cstring>
+#include <fstream>
+#include <ios>
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
 #include <iterator>
 #include <string>
+#include <sstream>
+#include <iomanip>
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_pixels.h>
 #include <SDL3/SDL_render.h>
@@ -15,6 +21,7 @@
 #include <SDL3/SDL_video.h>
 #include <SDL3/SDL_keyboard.h>
 #include <SDL3/SDL_scancode.h>
+#include <vector>
 
 #include "field.h"
 #include "tetrominoe.h"
@@ -28,6 +35,15 @@
 #define PIECE_DOWN_SCORE 25
 #define LINE_FILLED_SCORE 50
 
+// Constants
+static const char* highScoresFile = "highscores.txt";
+
+// structs
+typedef struct {
+    std::string text;
+    SDL_Color color;
+} HighScoreText;
+
 // Variables
 static bool running = false;
 static bool render = false;
@@ -40,7 +56,67 @@ static unsigned long lastStepTick;
 static std::string scoreText = "";
 static unsigned int piecesCnt = 0;
 static bool filledAnimation = false;
+static std::vector<int> highScores;
 
+static HighScoreText scoreBoard[10];
+
+// Update the scoreboard
+void updateScoreBoard(HighScoreText* sb, std::vector<int> scores) {
+    for(int i = 0; i < 10; i++) {
+        std::ostringstream ss;
+        ss.str("");
+        ss << std::setw(8) << scores[i];
+        sb->text = ss.str();
+        if(i < 3) {
+            sb->color = {255, 0, 0, 255};
+        } else {
+            sb->color = {75, 175, 125, 255};
+        }
+        sb++;
+    }
+}
+
+// Write to highscore file
+void writeToFile(std::string fileName, std::vector<int>& highScores)
+{
+    std::ofstream fs;
+    fs.open(fileName);
+    if(!fs.is_open()) {
+        return;
+    }
+
+    for(auto& hi : highScores) {
+        fs << hi << std::endl;
+    }
+    fs.flush();
+    fs.close();
+    updateScoreBoard(scoreBoard, highScores);
+}
+
+// Read from highscore file
+void readFromFile(std::string fileName, std::vector<int>& highScores)
+{
+    std::ifstream fs;
+    fs.open(fileName);
+    if(!fs.is_open()) {
+        highScores = std::vector<int>(10 , 0);
+        writeToFile(fileName, highScores);
+        return;
+    }
+
+    int i = 0;
+    int val = 0;
+    highScores.clear();
+    while(fs >> val) {
+        highScores.push_back(val);
+    }
+    std::sort(highScores.begin(), highScores.end(), [](int a, int b) { return a > b; });
+    updateScoreBoard(scoreBoard, highScores);
+    fs.close();
+}
+
+// Check for collissions between current shape and field
+// The field includes and the stacked pieces
 bool checkCollissions(Tetrominoe* t, PlayField* f, int offsetX, int offsetY, bool rotated)
 {
     int fx = t->wx + offsetX;
@@ -107,6 +183,7 @@ bool checkCollissions(Tetrominoe* t, PlayField* f, int offsetX, int offsetY, boo
     return false; // No collissions
 }
 
+// Check for filled lines (flashing '=') and remove them
 void removeFilledLines(PlayField* f) {
     int bottom = FIELD_HEIGHT - 1;
     int lineSize = FIELD_WIDTH - 2;
@@ -129,6 +206,7 @@ void removeFilledLines(PlayField* f) {
     }
 }
 
+// Check if there is filled lines and respond with score from lines
 int checkForFilledLines(PlayField* f, Tetrominoe* t)
 {
     int result = 0;
@@ -154,6 +232,7 @@ int checkForFilledLines(PlayField* f, Tetrominoe* t)
     return result * LINE_FILLED_SCORE;    
 }
 
+// Init the game variables
 void initGame(PlayField& f, Tetrominoe& cur, Tetrominoe& next) {
     const float fieldX = 20.0f;
     const float fieldY = 100.0f;
@@ -173,7 +252,7 @@ void initGame(PlayField& f, Tetrominoe& cur, Tetrominoe& next) {
     std::srand(std::time({}));
     rndPieceNum = std::rand() % (TT_Count);
     next = createTetrominoe((TetrominoeType)rndPieceNum);
-    placeTetrominoe(&next, (f.x + FIELD_WIDTH * BLOCK_WIDTH), BLOCK_WIDTH);
+    placeTetrominoe(&next, f.x, f.y - (BLOCK_HEIGHT * 4));
 
     // Initialize variables
     running = true;
@@ -187,6 +266,9 @@ void initGame(PlayField& f, Tetrominoe& cur, Tetrominoe& next) {
     scoreText = "SCORE: 0";
     piecesCnt = 0;
     filledAnimation = false;
+
+    // GetHighScores
+    readFromFile(highScoresFile, highScores);
 }
 
 int main(int argc, char** argv)
@@ -363,6 +445,16 @@ int main(int argc, char** argv)
                    firstfieldLine.find("6") != std::string::npos) {
                         gameOver = true;
                         currentPiece.isAlive = false;
+                        for(int i=0; i < highScores.size(); i++) {
+                            if(playerScore >= highScores[i]) {
+                                for(int j = highScores.size() - 1; j > i; j--) {
+                                    highScores[j] = highScores[j-1];
+                                }
+                                highScores[i] = playerScore;
+                                writeToFile(highScoresFile, highScores);
+                                break;
+                            }
+                        }
                     }
                 // Get next piece and create new one
                 if(!gameOver) {
@@ -374,7 +466,7 @@ int main(int argc, char** argv)
                     std::srand(std::time({}));
                     unsigned int rndPieceNum = std::rand() % (TT_Count);
                     nextPiece = createTetrominoe((TetrominoeType)rndPieceNum);
-                    placeTetrominoe(&nextPiece, 400.0f, 20.0f);
+                    placeTetrominoe(&nextPiece, pField.x, pField.y - (BLOCK_HEIGHT * 4));
                 }
             }
         }
@@ -388,12 +480,17 @@ int main(int argc, char** argv)
             drawTetrominoe(renderer, &currentPiece);
             drawTetrominoe(renderer, &nextPiece);
             
-            SDL_SetRenderScale(renderer, 4.0f, 4.0f);
-            SDL_SetRenderDrawColor(renderer, 51, 102, 255, SDL_ALPHA_OPAQUE);  // Light Blue
-            SDL_RenderDebugText(renderer, 100, 50, scoreText.c_str());
+            SDL_SetRenderScale(renderer, 3.0f, 3.0f);
+            SDL_SetRenderDrawColor(renderer, 50, 100, 255, SDL_ALPHA_OPAQUE);  // Light Blue
+            SDL_RenderDebugText(renderer, 150, 50, scoreText.c_str());
+            for(int i = 0; i < 10; i++) {
+                SDL_SetRenderDrawColor(renderer, scoreBoard[i].color.r, 
+                    scoreBoard[i].color.g, scoreBoard[i].color.b, scoreBoard[i].color.a);
+                SDL_RenderDebugText(renderer, 250, 50 + (i * 10), scoreBoard[i].text.c_str());
+            }
             if(gameOver) {
                 SDL_SetRenderDrawColor(renderer, 255, 102, 51, SDL_ALPHA_OPAQUE);  // Light Red
-                SDL_RenderDebugText(renderer, 100, 70, "GAME OVER !!!");
+                SDL_RenderDebugText(renderer, 150, 70, "GAME OVER !!!");
             }
             SDL_SetRenderScale(renderer, 1.0f, 1.0f);
 
