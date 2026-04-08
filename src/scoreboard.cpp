@@ -61,9 +61,11 @@ void addScore(ScoreBoard& sb, int score)
     }
 
 }
-void drawScoreBoard(SDL_Renderer* renderer, ScoreBoard* sb)
+void drawScoreBoard(SDL_Renderer* renderer, float x, float y, ScoreBoard* sb)
 {
     std::ostringstream ss;
+    float scale = 3.0f;
+    SDL_SetRenderScale(renderer, scale, scale);
     for(int i = 0; i < MAX_SCORES; i++) {
         ss.str("");
         ss << std::setw(8) << sb->scores[i];
@@ -72,6 +74,7 @@ void drawScoreBoard(SDL_Renderer* renderer, ScoreBoard* sb)
         } else {
             SDL_SetRenderDrawColor(renderer, 75, 175, 125, 255);
         }
-        SDL_RenderDebugText(renderer, 250, 50 + (i * 10), ss.str().c_str());
+        SDL_RenderDebugText(renderer, (x / scale), (y / scale) + (i * 10), ss.str().c_str());
     }
+    SDL_SetRenderScale(renderer, 1.0f, 1.0f);
 }

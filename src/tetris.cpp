@@ -1,3 +1,5 @@
+#include <SDL3/SDL_error.h>
+#include <SDL3/SDL_hints.h>
 #include <cstddef>
 #include <cstring>
 #include <fstream>
@@ -26,6 +28,7 @@
 #include "field.h"
 #include "tetrominoe.h"
 #include "scoreboard.h"
+#include "menu.h"
 
 #define TARGET_FPS 60
 #define FRAME_DELAY (1000 / TARGET_FPS)
@@ -36,11 +39,17 @@
 #define PIECE_DOWN_SCORE 25
 #define LINE_FILLED_SCORE 50
 
+enum class GameState {
+    InMenu,
+    Playing,
+    Paused,
+    GameOver,
+    Count
+};
+
 // Variables
 static bool running = false;
-static bool render = false;
 static unsigned int playerScore = 0;
-static bool gameOver = false;
 static bool pieceOnStack = false;
 static float gameSpeed = 1.0f;
 static unsigned long lastTick;
@@ -49,11 +58,49 @@ static std::string scoreText = "";
 static unsigned int piecesCnt = 0;
 static bool filledAnimation = false;
 static ScoreBoard scoreBoard;
+static GameState gameState;
+static GameState lastState;
+static Menu menu;
+
+static PlayField pField;
+static Tetrominoe currentPiece;
+static Tetrominoe nextPiece;
+
+static const SDL_DisplayMode* dm;
+
+// Forward declarations
+void initGame(PlayField& f, Tetrominoe& cur, Tetrominoe& next);
+
+// Text Drawing
+
+void drawText(SDL_Renderer* renderer, std::string msg, SDL_FColor color, float x, float y, float scale = 1.0f)
+{
+    SDL_SetRenderScale(renderer, scale, scale);
+    SDL_SetRenderDrawColorFloat(renderer, color.r, color.g, color.b, color.a);
+    SDL_RenderDebugText(renderer, (x /scale), (y / scale), msg.c_str());
+    SDL_SetRenderScale(renderer, 1.0f, 1.0f);
+}
+
+// Menu callback function
+void menuHandler(int selection)
+{
+    switch(selection) {
+        case -1:
+            gameState = lastState;
+            break;
+        case 0:
+            initGame(pField, currentPiece, nextPiece);
+            break;
+        case 2:
+            running = false;
+            break;
+    }
+}
 
 // Init the game variables
 void initGame(PlayField& f, Tetrominoe& cur, Tetrominoe& next) {
-    const float fieldX = 20.0f;
-    const float fieldY = 100.0f;
+    const float fieldX = BLOCK_WIDTH;
+    const float fieldY = BLOCK_HEIGHT * 5;
     unsigned int rndPieceNum;
 
     // Create Field
@@ -67,15 +114,13 @@ void initGame(PlayField& f, Tetrominoe& cur, Tetrominoe& next) {
     cur.isAlive = true;
 
     // Create and place next random piece
-    std::srand(std::time({}));
+    std::srand(std::time({}) + 1000);
     rndPieceNum = std::rand() % (TT_Count);
     next = createTetrominoe((TetrominoeType)rndPieceNum);
     placeTetrominoe(&next, f.x, f.y - (BLOCK_HEIGHT * 4));
 
     // Initialize variables
     running = true;
-    render = true;
-    gameOver = false;
     pieceOnStack = false;
     gameSpeed = 1.0f;
     lastTick = SDL_GetTicks();
@@ -84,14 +129,22 @@ void initGame(PlayField& f, Tetrominoe& cur, Tetrominoe& next) {
     scoreText = "SCORE: 0";
     piecesCnt = 0;
     filledAnimation = false;
+    gameState = GameState::Playing;
+
+    // Initialize menu
+    std::vector<std::string> menuItems = {
+        "NEW 1P GAME",
+        "NEW 2P GAME",
+        "EXIT GAME"
+    };
+    menu = createMenu(menuItems, (dm->w / 2.0f) - 100.0f, (dm->h / 2.0f) - 100.0f, menuHandler);
 
     // GetHighScores
     readFromFile(scoreBoard);
 }
 
-void readInput(bool keyPress[6])
+void readInput(SDL_Event& ev, bool keyPress[6])
 {
-    static SDL_Event ev = {};
     static const bool* currentKeyStates = SDL_GetKeyboardState(nullptr);
     static bool previousKeyStates[SDL_SCANCODE_COUNT] = {};
     static unsigned long repeatDelay[6] = {SDL_GetTicks()};
@@ -100,12 +153,16 @@ void readInput(bool keyPress[6])
     if(ev.type == SDL_EVENT_QUIT)
         keyPress[0] = true;
     // Escape (exit game)
-    if(currentKeyStates[SDL_SCANCODE_ESCAPE]) {
+    if(currentKeyStates[SDL_SCANCODE_ESCAPE] && !previousKeyStates[SDL_SCANCODE_ESCAPE]) {
         keyPress[0] = true;
     }
     // F12 (new game)
-    if(currentKeyStates[SDL_SCANCODE_F12]) {
+    if(currentKeyStates[SDL_SCANCODE_F12] && !previousKeyStates[SDL_SCANCODE_F12]) {
         keyPress[1] = true;
+    }
+    // P (pause)
+    if(currentKeyStates[SDL_SCANCODE_P] && !previousKeyStates[SDL_SCANCODE_P]) {
+        keyPress[6] = true;
     }
     // LEFT ARROW
     if(currentKeyStates[SDL_SCANCODE_LEFT] && !previousKeyStates[SDL_SCANCODE_LEFT]) {
@@ -159,19 +216,23 @@ int main(int argc, char** argv)
 {
     SDL_Init(SDL_INIT_VIDEO);
 
+    int num_displays;
+    SDL_DisplayID *displays = SDL_GetDisplays(&num_displays);
+    dm = SDL_GetDesktopDisplayMode(displays[0]);
+
     SDL_Window* window;
     SDL_Renderer* renderer;
-    SDL_CreateWindowAndRenderer("Tetris", WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE, &window, &renderer);
-    SDL_SetRenderLogicalPresentation(renderer, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_LOGICAL_PRESENTATION_LETTERBOX);
+    SDL_CreateWindowAndRenderer("Tetris", dm->w, dm->h, SDL_WINDOW_OPENGL | SDL_WINDOW_FULLSCREEN, &window, &renderer);
+    SDL_SetRenderLogicalPresentation(renderer, dm->w, dm->h, SDL_LOGICAL_PRESENTATION_LETTERBOX);
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
-    PlayField pField;
-    Tetrominoe currentPiece;
-    Tetrominoe nextPiece;
-
     initGame(pField, currentPiece, nextPiece);
+    gameState = GameState::InMenu; // Start with menu
 
-    bool keyPress[6] = {};
+    SDL_Event ev = {};
+    bool keyPress[7] = {};
+    lastState = gameState;
+
     while (running)
     {
         unsigned long frameStart = SDL_GetTicks();
@@ -179,32 +240,51 @@ int main(int argc, char** argv)
         // ************************
         // READ INPUT FROM KEYBOARD
         // ************************
-        readInput(keyPress);
+        if(gameState == GameState::InMenu) {
+            handleMenuInput(ev, menu);
+        }
+        else {
+            readInput(ev, keyPress);
+        }
 
         // ************************
         // UPDATE GAME
         // ************************
-        // Exit Game
-        if(keyPress[0])
-            running = false;
+        // Show Menu
+        if(keyPress[0]) {
+            lastState = gameState;
+            gameState = GameState::InMenu;
+        }
         // New Game
-        if(keyPress[1])
+        if(keyPress[1]) {
             initGame(pField, currentPiece, nextPiece);
+        }
+        // Pause Game
+        if(keyPress[6] && gameState == GameState::Playing) {
+            gameState = GameState::Paused;
+            keyPress[6] = false;
+        }
+        // Unpause Game
+        if(keyPress[6] && gameState == GameState::Paused) {
+            gameState = GameState::Playing;
+            keyPress[6] = false;
+        }
+        // While paused disable all movements
+        if(gameState == GameState::Paused) {
+            SDL_zero(keyPress);
+        }
         // Move current piece left
         if(keyPress[2] && currentPiece.isAlive && !checkCollissions(&currentPiece, &pField, -1, 0, false)) {
             moveTetrominoe(-1, 0, &currentPiece);
-            render = true;
         }
         // Move current piece right
         if(keyPress[3] && currentPiece.isAlive && !checkCollissions(&currentPiece, &pField, 1, 0, false)) {
             moveTetrominoe(1, 0, &currentPiece);
-            render = true;
         }
         // Move current piece down
         if(keyPress[4] && currentPiece.isAlive) {
             if(!checkCollissions(&currentPiece, &pField, 0, 1, false)) {
                 moveTetrominoe(0, 1, &currentPiece);
-                render = true;
             } else {
                 pieceOnStack = true;
             }
@@ -212,13 +292,12 @@ int main(int argc, char** argv)
         // Rotate current piece
         if(keyPress[5] && currentPiece.isAlive && !checkCollissions(&currentPiece, &pField, 0, 0, true)) {
             rotateTetrominoe(&currentPiece);
-            render = true;
         }
         // Reset keypresses
         SDL_zero(keyPress);
 
         // Game Logic
-        if(!gameOver) {
+        if(gameState == GameState::Playing) {
             // Update gameSpeed
             if(piecesCnt >= 20) {
                 gameSpeed *= 1.5f;
@@ -236,14 +315,12 @@ int main(int argc, char** argv)
                     } else {
                         pieceOnStack = true;
                     }
-                    render = true;
                 }
             }
 
             // We are showing filled lines animation
             unsigned long filledAnimationTicks;
             if(filledAnimation) {
-                render = true;
                 //currentPiece.isAlive = false;
                 pieceOnStack = false;
                 if(SDL_GetTicks() - filledAnimationTicks >= 120.0f) {
@@ -256,7 +333,6 @@ int main(int argc, char** argv)
             // Piece hit the bottom stack
             if(pieceOnStack) {
                 pieceOnStack = false;
-                render = true;
                 // Make tetrominoe a piece of the stack
                 int x = currentPiece.wx;
                 int y = currentPiece.wy;
@@ -292,12 +368,12 @@ int main(int argc, char** argv)
                    firstfieldLine.find("2") != std::string::npos || firstfieldLine.find("3") != std::string::npos ||
                    firstfieldLine.find("4") != std::string::npos || firstfieldLine.find("5") != std::string::npos ||
                    firstfieldLine.find("6") != std::string::npos) {
-                        gameOver = true;
                         currentPiece.isAlive = false;
                         addScore(scoreBoard, playerScore);
+                        gameState = GameState::GameOver;
                     }
                 // Get next piece and create new one
-                if(!gameOver) {
+                if(gameState != GameState::GameOver) {
                     // Make next piece current
                     currentPiece = nextPiece;
                     attachTetrominoeToField(&currentPiece, &pField);
@@ -314,27 +390,33 @@ int main(int argc, char** argv)
         // ************************
         // RENDER
         // ************************
-        if(render) {
-            SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE); // Black
-            SDL_RenderClear(renderer);
-            
-            drawField(renderer, &pField);
-            drawTetrominoe(renderer, &currentPiece);
-            drawTetrominoe(renderer, &nextPiece);
-            
-            SDL_SetRenderScale(renderer, 3.0f, 3.0f);
-            SDL_SetRenderDrawColor(renderer, 50, 100, 255, SDL_ALPHA_OPAQUE);  // Light Blue
-            SDL_RenderDebugText(renderer, 150, 50, scoreText.c_str());
-            drawScoreBoard(renderer, &scoreBoard);
-            if(gameOver) {
-                SDL_SetRenderDrawColor(renderer, 255, 102, 51, SDL_ALPHA_OPAQUE);  // Light Red
-                SDL_RenderDebugText(renderer, 150, 70, "GAME OVER !!!");
-            }
-            SDL_SetRenderScale(renderer, 1.0f, 1.0f);
-
-            SDL_RenderPresent(renderer);
-            render = false;
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE); // Black
+        SDL_RenderClear(renderer);
+        
+        drawField(renderer, &pField);
+        drawTetrominoe(renderer, &currentPiece);
+        drawTetrominoe(renderer, &nextPiece);
+        drawScoreBoard(renderer, (pField.x + (FIELD_WIDTH * BLOCK_WIDTH) + 100.0f), 200.0f, &scoreBoard);
+        drawText(renderer, 
+            scoreText, 
+            {0.2f, 0.4f, 1.0f, 1.0f}, 
+            (pField.x + (FIELD_WIDTH * BLOCK_WIDTH) + 100.0f), 100.0f, 3.0f);
+        if(gameState == GameState::GameOver) {
+            drawText(renderer, 
+                "GAME OVER !!!",
+                {1.0f, 0.4f, 0.2f, 1.0f}, 
+                (pField.x + (FIELD_WIDTH * BLOCK_WIDTH) + 100.0f), 150.0f, 3.0f);
         }
+        if(gameState == GameState::Paused) {
+            drawText(renderer, 
+                "GAME PAUSED !",
+                {1.0f, 0.4f, 0.2f, 1.0f}, 
+                (pField.x + (FIELD_WIDTH * BLOCK_WIDTH) + 100.0f), 150.0f, 3.0f);
+        }
+        if(gameState == GameState::InMenu) {
+            drawMenu(renderer, &menu);
+        }
+        SDL_RenderPresent(renderer);
 
         // Calcuation for fixed FPS
         unsigned long frameTime = SDL_GetTicks() - frameStart;

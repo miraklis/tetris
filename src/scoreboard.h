@@ -14,6 +14,6 @@ typedef struct {
 void writeToFile(ScoreBoard& sb);
 void readFromFile(ScoreBoard& sb);
 void addScore(ScoreBoard& sb, int score);
-void drawScoreBoard(SDL_Renderer* renderer, ScoreBoard* sb);
+void drawScoreBoard(SDL_Renderer* renderer, float x, float y,ScoreBoard* sb);
 
 #endif

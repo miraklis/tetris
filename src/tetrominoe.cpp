@@ -259,7 +259,8 @@ void rotateLayout(std::string* layout) {
 
     for(int i=0; i<4; i++)
         for(int j=0; j<4; j++)
-            (*layout)[(i * 4) + j] = s[12 + i - (j * 4)]; // rotate 90 degrees CW
+            //(*layout)[(i * 4) + j] = s[12 + i - (j * 4)]; // rotate 90 degrees CW
+            (*layout)[(i * 4) + j] = s[(15 - i) - ((3 - j) * 4)]; //(15-$I7)-((3-M$1)*4)
 }
 
 // Check for collissions between current shape and field

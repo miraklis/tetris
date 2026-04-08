@@ -180,5 +180,5 @@ int checkForFilledLines(PlayField* f, Tetrominoe* t)
         result += 2;
     if(result == 2)
         result++;
-    return result;// * LINE_FILLED_SCORE;
+    return result;
 }
