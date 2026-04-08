@@ -1,5 +1,3 @@
-#include <SDL3/SDL_error.h>
-#include <SDL3/SDL_hints.h>
 #include <cstddef>
 #include <cstring>
 #include <fstream>
@@ -24,17 +22,17 @@
 #include <SDL3/SDL_video.h>
 #include <SDL3/SDL_keyboard.h>
 #include <SDL3/SDL_scancode.h>
+#include <SDL3/SDL_error.h>
+#include <SDL3/SDL_hints.h>
 
 #include "field.h"
 #include "tetrominoe.h"
 #include "scoreboard.h"
 #include "menu.h"
+#include "text.h"
 
 #define TARGET_FPS 60
 #define FRAME_DELAY (1000 / TARGET_FPS)
-
-#define WINDOW_WIDTH 1024
-#define WINDOW_HEIGHT 768
 
 #define PIECE_DOWN_SCORE 25
 #define LINE_FILLED_SCORE 50
@@ -47,58 +45,24 @@ enum class GameState {
     Count
 };
 
-// Variables
-static bool running = false;
-static unsigned int playerScore = 0;
-static bool pieceOnStack = false;
-static float gameSpeed = 1.0f;
-static unsigned long lastTick;
-static unsigned long lastStepTick;
-static std::string scoreText = "";
-static unsigned int piecesCnt = 0;
-static bool filledAnimation = false;
-static ScoreBoard scoreBoard;
-static GameState gameState;
-static GameState lastState;
-static Menu menu;
-
-static PlayField pField;
-static Tetrominoe currentPiece;
-static Tetrominoe nextPiece;
-
-static const SDL_DisplayMode* dm;
-
-// Forward declarations
-void initGame(PlayField& f, Tetrominoe& cur, Tetrominoe& next);
-
-// Text Drawing
-
-void drawText(SDL_Renderer* renderer, std::string msg, SDL_FColor color, float x, float y, float scale = 1.0f)
-{
-    SDL_SetRenderScale(renderer, scale, scale);
-    SDL_SetRenderDrawColorFloat(renderer, color.r, color.g, color.b, color.a);
-    SDL_RenderDebugText(renderer, (x /scale), (y / scale), msg.c_str());
-    SDL_SetRenderScale(renderer, 1.0f, 1.0f);
-}
-
 // Menu callback function
-void menuHandler(int selection)
+void menuHandler(int selection, int* actions)
 {
     switch(selection) {
-        case -1:
-            gameState = lastState;
-            break;
         case 0:
-            initGame(pField, currentPiece, nextPiece);
+            actions[0] = 1;
             break;
-        case 2:
-            running = false;
+        case 1:
+            actions[1] = 1;
+            break;
+        case 3:
+            actions[3] = 1;
             break;
     }
 }
 
 // Init the game variables
-void initGame(PlayField& f, Tetrominoe& cur, Tetrominoe& next) {
+void init1PlayerGame(PlayField& f, Tetrominoe& cur, Tetrominoe& next) {
     const float fieldX = BLOCK_WIDTH;
     const float fieldY = BLOCK_HEIGHT * 5;
     unsigned int rndPieceNum;
@@ -118,29 +82,6 @@ void initGame(PlayField& f, Tetrominoe& cur, Tetrominoe& next) {
     rndPieceNum = std::rand() % (TT_Count);
     next = createTetrominoe((TetrominoeType)rndPieceNum);
     placeTetrominoe(&next, f.x, f.y - (BLOCK_HEIGHT * 4));
-
-    // Initialize variables
-    running = true;
-    pieceOnStack = false;
-    gameSpeed = 1.0f;
-    lastTick = SDL_GetTicks();
-    lastStepTick = SDL_GetTicks();
-    playerScore = 0;
-    scoreText = "SCORE: 0";
-    piecesCnt = 0;
-    filledAnimation = false;
-    gameState = GameState::Playing;
-
-    // Initialize menu
-    std::vector<std::string> menuItems = {
-        "NEW 1P GAME",
-        "NEW 2P GAME",
-        "EXIT GAME"
-    };
-    menu = createMenu(menuItems, (dm->w / 2.0f) - 100.0f, (dm->h / 2.0f) - 100.0f, menuHandler);
-
-    // GetHighScores
-    readFromFile(scoreBoard);
 }
 
 void readInput(SDL_Event& ev, bool keyPress[6])
@@ -154,10 +95,6 @@ void readInput(SDL_Event& ev, bool keyPress[6])
         keyPress[0] = true;
     // Escape (exit game)
     if(currentKeyStates[SDL_SCANCODE_ESCAPE] && !previousKeyStates[SDL_SCANCODE_ESCAPE]) {
-        keyPress[0] = true;
-    }
-    // F12 (new game)
-    if(currentKeyStates[SDL_SCANCODE_F12] && !previousKeyStates[SDL_SCANCODE_F12]) {
         keyPress[1] = true;
     }
     // P (pause)
@@ -214,25 +151,55 @@ void readInput(SDL_Event& ev, bool keyPress[6])
 
 int main(int argc, char** argv)
 {
+    // ************************
+    // Init SDL and Window
+    // ************************
     SDL_Init(SDL_INIT_VIDEO);
-
+    
     int num_displays;
     SDL_DisplayID *displays = SDL_GetDisplays(&num_displays);
+    const SDL_DisplayMode* dm;
     dm = SDL_GetDesktopDisplayMode(displays[0]);
 
     SDL_Window* window;
     SDL_Renderer* renderer;
-    SDL_CreateWindowAndRenderer("Tetris", dm->w, dm->h, SDL_WINDOW_OPENGL | SDL_WINDOW_FULLSCREEN, &window, &renderer);
-    SDL_SetRenderLogicalPresentation(renderer, dm->w, dm->h, SDL_LOGICAL_PRESENTATION_LETTERBOX);
+    SDL_CreateWindowAndRenderer("Tetris", dm->w, dm->h, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE, &window, &renderer);
+    int wWidth, wHeight;
+    SDL_GetWindowSize(window, &wWidth, &wHeight);
+    SDL_SetRenderLogicalPresentation(renderer, wWidth, wHeight, SDL_LOGICAL_PRESENTATION_LETTERBOX);
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
-    initGame(pField, currentPiece, nextPiece);
-    gameState = GameState::InMenu; // Start with menu
+    // Declare and initialize variables
+    bool running = true;
+    unsigned int playerScore = 0;
+    bool pieceOnStack = false;
+    float gameSpeed = 1.0f;
+    unsigned long lastTick = 0;
+    unsigned long lastStepTick = 0;
+    std::string scoreText = "";
+    unsigned int piecesCnt = 0;
+    bool filledAnimation = false;
+    GameState gameState = GameState::InMenu;
+    GameState lastState = gameState;
+
+    // Game objects
+    PlayField pField;
+    Tetrominoe currentPiece;
+    Tetrominoe nextPiece;
+    ScoreBoard scoreBoard;
+    Menu menu;
+
+    // Initialize menu
+    std::vector<std::string> menuItems = {
+        " 1 PLAYER GAME ",
+        " 2 PLAYER GAME ",
+        "   EXIT GAME   "
+    };
+    int menuAction[4];
+    menu = createMenu(menuItems, wWidth / 2.0f, wHeight / 2.0f, 3.0f, menuAction, menuHandler);
 
     SDL_Event ev = {};
     bool keyPress[7] = {};
-    lastState = gameState;
-
     while (running)
     {
         unsigned long frameStart = SDL_GetTicks();
@@ -250,14 +217,38 @@ int main(int argc, char** argv)
         // ************************
         // UPDATE GAME
         // ************************
-        // Show Menu
+        // Menu Actions ***********
+        if(menuAction[0] == 1) { // close menu
+            gameState = lastState;
+        }
+        if(menuAction[1] == 1) { // 1 player game
+            // Initialize variables
+            pieceOnStack = false;
+            gameSpeed = 1.0f;
+            lastTick = SDL_GetTicks();
+            lastStepTick = SDL_GetTicks();
+            playerScore = 0;
+            scoreText = "SCORE : 0";
+            piecesCnt = 0;
+            filledAnimation = false;
+            gameState = GameState::Playing;
+            // Create objects
+            init1PlayerGame(pField, currentPiece, nextPiece);
+            // GetHighScores
+            readFromFile(scoreBoard);
+        }
+        if(menuAction[3] == 1) { // exit game
+            running = false;
+        }
+        SDL_zero(menuAction);
+        // Game Actions ***********
         if(keyPress[0]) {
+            running = false;
+        }
+        // Show Menu
+        if(keyPress[1]) {
             lastState = gameState;
             gameState = GameState::InMenu;
-        }
-        // New Game
-        if(keyPress[1]) {
-            initGame(pField, currentPiece, nextPiece);
         }
         // Pause Game
         if(keyPress[6] && gameState == GameState::Playing) {
@@ -321,12 +312,10 @@ int main(int argc, char** argv)
             // We are showing filled lines animation
             unsigned long filledAnimationTicks;
             if(filledAnimation) {
-                //currentPiece.isAlive = false;
                 pieceOnStack = false;
                 if(SDL_GetTicks() - filledAnimationTicks >= 120.0f) {
                     filledAnimation = false;
                     removeFilledLines(&pField);
-                    currentPiece.isAlive = true;
                 }
             }
 

@@ -2,14 +2,27 @@
 #include <SDL3/SDL_oldnames.h>
 #include <SDL3/SDL_scancode.h>
 #include "menu.h"
+#include "text.h"
+
+//static const float scale = 3.0f;
 
 void updateMenu(Menu& m)
 {
-    const size_t rowHeight = 30;
-    const size_t menuHeight = m.items.size() * rowHeight;
-    const size_t menuWidth = 300;
-    const float mx = m.x;//1024.0f / 2.0f - menuWidth;
-    const float my = m.y;//768.0f / 2.0f - menuHeight;
+    // const float rowHeight = 10.0f * scale;
+    // const float menuHeight = m.items.size() * rowHeight;
+    // size_t maxSize = 0;
+    // for(auto& i : m.items) {
+    //     if(i.length() > maxSize)
+    //         maxSize = i.length();
+    // }
+    // const float menuWidth = maxSize * 8.0f * scale;
+    // m.x -= menuWidth / 2.0f;
+    // m.y -= menuHeight / 2.0f;
+    const float rowHeight = 10.0f * m.scale;
+    const float mx = m.x;
+    const float my = m.y;
+    const float menuWidth = m.w;
+    const float menuHeight = m.h;
 
     // Menu Background
     SDL_FColor menuColor = {0.0f, 0.0f, 1.0f, 1.0f};
@@ -43,24 +56,30 @@ void selectItem(Menu& menu, int itemIndex)
     updateMenu(menu);
 }
 
-Menu createMenu(std::vector<std::string>& items, int x, int y, void(*callback)(int))
+Menu createMenu(std::vector<std::string>& items, int x, int y, float scale, int* actions, void(*callback)(int, int*))
 {
     Menu m;
-    m.x = x;
-    m.y = y;
+    // m.x = x;
+    // m.y = y;
+    m.actions = actions;
     m.callback = callback;
     m.selectedIndex = 0;
     for(auto i : items) {
         m.items.push_back(i);
     }
+    m.scale = scale;
+    m.h = m.items.size() * 10.0f * m.scale;
+    //const float menuHeight = m.items.size() * rowHeight;
+    size_t maxSize = 0;
+    for(auto& i : m.items) {
+        if(i.length() > maxSize)
+            maxSize = i.length();
+    }
+    m.w = maxSize * 8.0f * m.scale;
+    m.x = x - (m.w / 2.0f);
+    m.y = y - (m.h / 2.0f);
     updateMenu(m);
     return m;
-}
-
-void addMenuItem(Menu& menu, std::string item)
-{
-    menu.items.push_back(item);
-    updateMenu(menu);
 }
 
 void handleMenuInput(SDL_Event& ev, Menu& menu)
@@ -73,7 +92,7 @@ void handleMenuInput(SDL_Event& ev, Menu& menu)
 
     SDL_PollEvent(&ev);
     if(menuKeyStates[SDL_SCANCODE_ESCAPE] && !previousMenuKeyStates[SDL_SCANCODE_ESCAPE]) {
-        menu.callback(-1);
+        menu.callback(0, menu.actions);
     }
     if(menuKeyStates[SDL_SCANCODE_DOWN] && !previousMenuKeyStates[SDL_SCANCODE_DOWN]) {
         selectItem(menu, menu.selectedIndex+1);
@@ -82,28 +101,21 @@ void handleMenuInput(SDL_Event& ev, Menu& menu)
         selectItem(menu, menu.selectedIndex-1);
     }
     if(menuKeyStates[SDL_SCANCODE_RETURN] && !previousMenuKeyStates[SDL_SCANCODE_RETURN]) {
-        menu.callback(menu.selectedIndex);
+        menu.callback(menu.selectedIndex + 1, menu.actions);
     }
 }
 
 void drawMenu(SDL_Renderer* renderer, Menu* menu)
 {
+    if(!menu)
+        return;
     size_t vertSize = SDL_arraysize(menu->vertices);
     SDL_RenderGeometry(renderer, NULL, menu->vertices, vertSize, NULL, 0);
 
-    float paddingX = 15.0f;
-    float paddingY = 5.0f;
-
-    int scaleText = 3.0f;
-    SDL_SetRenderScale(renderer, scaleText, scaleText);
-    SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE); // White
     for(int i = 0; i < menu->items.size(); i++) {
-        SDL_RenderDebugText(renderer, 
-            (menu->x + paddingX) / scaleText,
-            (menu->y + (i * 30) + paddingY) / scaleText,
-            menu->items[i].c_str()
-        );
+        drawText(renderer, 
+            menu->items[i], 
+            {1.0f, 1.0f, 1.0f, 1.0f}, 
+            menu->x, (menu->y + (i * 10.0f * menu->scale) + (menu->scale * 2.0f)), menu->scale);
     }
-    SDL_SetRenderScale(renderer, 1.0f, 1.0f);
-
 }

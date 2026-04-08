@@ -7,8 +7,8 @@
 
 #define FIELD_WIDTH 12
 #define FIELD_HEIGHT 24
-#define BLOCK_WIDTH 35
-#define BLOCK_HEIGHT 35
+#define BLOCK_WIDTH 34
+#define BLOCK_HEIGHT 34
 #define WALL_COLOR {0.1f, 0.1f, 0.1f, 1.0f}
 #define STACK_COLOR {0.5f, 0.5f, 0.5f, 1.0f}
 #define START_FIELD_ROW 4

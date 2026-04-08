@@ -117,9 +117,10 @@ void updateField(PlayField* f)
 PlayField createField(float x, float y)
 {
     PlayField f;
+    std::string emptyLine = std::string((FIELD_WIDTH - 2), '.');
     for(int i=0; i < FIELD_HEIGHT - 1; i++) {
         char c = i >=START_FIELD_ROW ? '#' : '@';
-        f.fieldLayout.append(c+std::string((FIELD_WIDTH - 2), '.')+c);
+        f.fieldLayout.append(c + emptyLine + c);
     }
     f.fieldLayout.append(std::string(FIELD_WIDTH, '#'));
     f.x = x;
@@ -130,6 +131,8 @@ PlayField createField(float x, float y)
 
 void drawField(SDL_Renderer* renderer, PlayField* f)
 {
+    if(!f)
+        return;
     size_t vertSize = f->vertices.size();
     SDL_RenderGeometry(renderer, NULL, f->vertices.data(), vertSize, NULL, 0);
 }

@@ -1,6 +1,7 @@
 #ifndef MENU_H
 #define MENU_H
 
+#include <SDL3/SDL_rect.h>
 #include <SDL3/SDL_render.h>
 #include <vector>
 #include <string>
@@ -11,14 +12,17 @@
 typedef struct {
     float x;
     float y;
+    float w;
+    float h;
+    float scale;
     SDL_Vertex vertices[12];
     std::vector<std::string> items;
     int selectedIndex;
-    void(*callback)(int);
+    int* actions;
+    void(*callback)(int, int*);
 } Menu;
 
-Menu createMenu(std::vector<std::string>& items, int x, int y, void(*callback)(int));
-void addMenuItem(Menu& menu, std::string item);
+Menu createMenu(std::vector<std::string>& items, int x, int y, float scale, int* actions, void(*callback)(int, int*));
 void handleMenuInput(SDL_Event& ev, Menu& menu);
 void drawMenu(SDL_Renderer* renderer, Menu* menu);
 

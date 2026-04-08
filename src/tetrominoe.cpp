@@ -226,6 +226,8 @@ void rotateTetrominoe(Tetrominoe* t)
 
 void drawTetrominoe(SDL_Renderer* renderer, Tetrominoe* t)
 {
+    if(!t)
+        return;
     size_t vertSize = SDL_arraysize(t->vertices);
     SDL_RenderGeometry(renderer, NULL, t->vertices, vertSize, NULL, 0);
 }

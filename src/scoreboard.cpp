@@ -63,10 +63,12 @@ void addScore(ScoreBoard& sb, int score)
 }
 void drawScoreBoard(SDL_Renderer* renderer, float x, float y, ScoreBoard* sb)
 {
+    if(!sb)
+        return;
     std::ostringstream ss;
     float scale = 3.0f;
     SDL_SetRenderScale(renderer, scale, scale);
-    for(int i = 0; i < MAX_SCORES; i++) {
+    for(int i = 0; i < sb->scores.size(); i++) {
         ss.str("");
         ss << std::setw(8) << sb->scores[i];
         if(i < 3) {
