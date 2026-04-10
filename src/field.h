@@ -17,8 +17,11 @@ struct sTetrominoe;
 
 typedef struct {
     float x, y;
-    std::string fieldLayout;
-    std::vector<SDL_Vertex> vertices;
+    //std::string fieldLayout;
+    //std::vector<SDL_Vertex> vertices;
+    char fieldLayout[FIELD_WIDTH * FIELD_HEIGHT];
+    size_t vertCount;
+    SDL_Vertex* vertices;//[FIELD_WIDTH * FIELD_HEIGHT * 30];
 } PlayField;
 
 PlayField createField(float x = 0.0f, float y = 0.0f);
@@ -26,5 +29,6 @@ void drawField(SDL_Renderer* renderer, PlayField* f);
 void updateField(PlayField* f);
 void removeFilledLines(PlayField* f);
 int checkForFilledLines(PlayField* f, sTetrominoe* t);
+bool checkGameOver(PlayField* f);
 
 #endif // FIELD_H

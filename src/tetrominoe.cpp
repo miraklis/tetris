@@ -261,8 +261,8 @@ void rotateLayout(std::string* layout) {
 
     for(int i=0; i<4; i++)
         for(int j=0; j<4; j++)
-            //(*layout)[(i * 4) + j] = s[12 + i - (j * 4)]; // rotate 90 degrees CW
-            (*layout)[(i * 4) + j] = s[(15 - i) - ((3 - j) * 4)]; //(15-$I7)-((3-M$1)*4)
+            (*layout)[(i * 4) + j] = s[12 + i - (j * 4)]; // rotate 90 degrees CW
+            //(*layout)[(i * 4) + j] = s[(15 - i) - ((3 - j) * 4)]; // rotate 90 degrees CCW
 }
 
 // Check for collissions between current shape and field
@@ -284,7 +284,11 @@ bool checkCollissions(Tetrominoe* t, PlayField* f, int offsetX, int offsetY, boo
 
     int cnt = 0;
     while(y < FIELD_HEIGHT && cnt < 4) {
-        fieldMask.append(f->fieldLayout.substr((y * FIELD_WIDTH) + fx, 4));
+        //fieldMask.append(f->fieldLayout.substr((y * FIELD_WIDTH) + fx, 4));
+        std::string fm;
+        for(int i = 0; i < 4; i++)
+            fm += f->fieldLayout[(y * FIELD_WIDTH) + fx + i];
+        fieldMask.append(fm);
         cnt++;
         y++;
     }

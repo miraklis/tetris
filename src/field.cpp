@@ -1,3 +1,4 @@
+#include <iostream>
 #include <cstddef>
 
 #include <SDL3/SDL_gpu.h>
@@ -9,7 +10,10 @@
 
 void updateField(PlayField* f)
 {
-    f->vertices.clear();
+//    f->vertices.clear();
+    if(f->vertices != NULL)
+        free(f->vertices);
+    f->vertCount = 0;
     float bw = BLOCK_WIDTH;
     float bh = BLOCK_HEIGHT;
     unsigned int strParser = 0;
@@ -17,12 +21,15 @@ void updateField(PlayField* f)
     float bt = 2.0f;
     SDL_FColor bc = {1.0f, 1.0f, 1.0f, 1.0f};
 
-    while(strParser < f->fieldLayout.length()) {
+    SDL_Vertex* v;
+//    while(strParser < f->fieldLayout.length()) {
+    while(strParser < sizeof(f->fieldLayout)) {
         if(f->fieldLayout[strParser]=='.' || f->fieldLayout[strParser]=='@') {
             strParser++;
             continue;
         } else {
-            SDL_Vertex v[30];
+            //SDL_Vertex v[30];
+            v = (SDL_Vertex*)malloc(sizeof(SDL_Vertex) * 30);
             if(f->fieldLayout[strParser]=='#') {
                 bt = 2.0f;
                 vertColor = WALL_COLOR;
@@ -106,35 +113,57 @@ void updateField(PlayField* f)
             v[27] = {{bdx, bdy + bh}, bc };
             v[28] = {{bdx + bt, bdy}, bc };
             v[29] = {{bdx + bt, bdy + bh}, bc };
-            size_t vertArraySize = SDL_arraysize(v);
-            for(int i=0; i<vertArraySize; i++)
-                f->vertices.push_back(v[i]);
+            // size_t vertArraySize = SDL_arraysize(v);
+            // for(int i=0; i<vertArraySize; i++)
+            //     f->vertices.push_back(v[i]);
+            f->vertices+=30;
+            f->vertCount+=30;
             strParser++;
         }
-    }    
+    }
+    f->vertices = &v[0];
 }
 
 PlayField createField(float x, float y)
 {
     PlayField f;
-    std::string emptyLine = std::string((FIELD_WIDTH - 2), '.');
-    for(int i=0; i < FIELD_HEIGHT - 1; i++) {
-        char c = i >=START_FIELD_ROW ? '#' : '@';
-        f.fieldLayout.append(c + emptyLine + c);
+    f.vertices = NULL;
+    for(int i=0; i < FIELD_HEIGHT; i++) {
+        for(int j=0; j < FIELD_WIDTH; j++) {
+            char c = i >=START_FIELD_ROW ? '#' : '@';
+            if(j==0 | j==FIELD_WIDTH-1 | i==FIELD_HEIGHT-1)
+                f.fieldLayout[(i * FIELD_WIDTH) + j] = c;
+            else
+                f.fieldLayout[(i * FIELD_WIDTH) + j] = '.';;
+        }
     }
-    f.fieldLayout.append(std::string(FIELD_WIDTH, '#'));
     f.x = x;
     f.y = y;
+    std::cout << f.fieldLayout << std::endl;
     updateField(&f);
     return f;
+
+    // PlayField f;
+    // std::string emptyLine = std::string((FIELD_WIDTH - 2), '.');
+    // for(int i=0; i < FIELD_HEIGHT - 1; i++) {
+    //     char c = i >=START_FIELD_ROW ? '#' : '@';
+    //     f.fieldLayout.append(c + emptyLine + c);
+    // }
+    // f.fieldLayout.append(std::string(FIELD_WIDTH, '#'));
+    // f.x = x;
+    // f.y = y;
+    // updateField(&f);
+    // return f;
 }
 
 void drawField(SDL_Renderer* renderer, PlayField* f)
 {
     if(!f)
         return;
-    size_t vertSize = f->vertices.size();
-    SDL_RenderGeometry(renderer, NULL, f->vertices.data(), vertSize, NULL, 0);
+    //size_t vertSize = f->vertices.size();
+    //SDL_RenderGeometry(renderer, NULL, f->vertices.data(), vertSize, NULL, 0);
+    //size_t vertSize = f->vertCount;
+    SDL_RenderGeometry(renderer, NULL, f->vertices, f->vertCount, NULL, 0);    
 }
 
 // Check for filled lines (flashing '=') and remove them
@@ -145,19 +174,51 @@ void removeFilledLines(PlayField* f) {
     std::string filledLine(lineSize, '=');
     while(bottom > 0) {
         bottom--;
-        std::string line = f->fieldLayout.substr((bottom * FIELD_WIDTH) + 1, lineSize);
-        if(line == filledLine) {
+        bool filled = true;
+        for(int i = 1; i < FIELD_WIDTH - 1; i++) {
+            if(f->fieldLayout[(bottom * FIELD_WIDTH) + i] != '=') {
+                filled = false;
+                break;
+            }
+        }
+        if(filled) {
             int yy = bottom;
             while(yy > 1) {
+                for(int i = 1; i < FIELD_WIDTH - 1; i++) {
+                    f->fieldLayout[(yy * FIELD_WIDTH) + i] = f->fieldLayout[((yy - 1) * FIELD_WIDTH) + i];
+                }
                 yy--;
-                std::string prevLine = f->fieldLayout.substr((yy * FIELD_WIDTH) + 1, lineSize);
-                f->fieldLayout.replace(((yy + 1) * FIELD_WIDTH) + 1, lineSize, prevLine);
             }
-            f->fieldLayout.replace(1, lineSize, emptyLine);
             updateField(f);
             bottom++;
         }
     }
+    for(int i = 0; i < FIELD_WIDTH; i++) {
+        if(f->fieldLayout[i] == 0 || i == FIELD_WIDTH - 1)
+            f->fieldLayout[i] = '@';
+        else
+            f->fieldLayout[i] = '.';
+    }
+
+    // int bottom = FIELD_HEIGHT - 1;
+    // int lineSize = FIELD_WIDTH - 2;
+    // std::string emptyLine(lineSize, '.');
+    // std::string filledLine(lineSize, '=');
+    // while(bottom > 0) {
+    //     bottom--;
+    //     std::string line = f->fieldLayout.substr((bottom * FIELD_WIDTH) + 1, lineSize);
+    //     if(line == filledLine) {
+    //         int yy = bottom;
+    //         while(yy > 1) {
+    //             yy--;
+    //             std::string prevLine = f->fieldLayout.substr((yy * FIELD_WIDTH) + 1, lineSize);
+    //             f->fieldLayout.replace(((yy + 1) * FIELD_WIDTH) + 1, lineSize, prevLine);
+    //         }
+    //         f->fieldLayout.replace(1, lineSize, emptyLine);
+    //         updateField(f);
+    //         bottom++;
+    //     }
+    // }
 }
 
 // Check if there is filled lines and respond with score from lines
@@ -166,15 +227,21 @@ int checkForFilledLines(PlayField* f, Tetrominoe* t)
     int result = 0;
     int top = t->wy;
     int bottom = (t->wy + 4) > FIELD_HEIGHT - 1? FIELD_HEIGHT - 1 : (t->wy + 4);
-    int lineSize = FIELD_WIDTH - 2;
-    std::string emptyLine(lineSize, '.');
-    std::string filledLine(lineSize, '=');
+
     while(bottom > 0 && bottom >= top) {
         bottom--;
-        std::string line = f->fieldLayout.substr((bottom * FIELD_WIDTH) + 1, lineSize);
-        if(line.find(".") == std::string::npos) {
+        bool filled = true;
+        for(int i = 1; i < FIELD_WIDTH - 1; i++) {
+            if(f->fieldLayout[(bottom * FIELD_WIDTH) + i] == '.') {
+                filled = false;
+                break;
+            }
+        }
+        if(filled) {
             result++;
-            f->fieldLayout.replace((bottom * FIELD_WIDTH) + 1, lineSize, filledLine);
+            for(int i = 1; i < FIELD_WIDTH - 1; i++) {
+                f->fieldLayout[(bottom * FIELD_WIDTH) + i] = '=';
+            }
         }
     }
     if(result == 4)
@@ -184,4 +251,39 @@ int checkForFilledLines(PlayField* f, Tetrominoe* t)
     if(result == 2)
         result++;
     return result;
+
+    // int result = 0;
+    // int top = t->wy;
+    // int bottom = (t->wy + 4) > FIELD_HEIGHT - 1? FIELD_HEIGHT - 1 : (t->wy + 4);
+    // int lineSize = FIELD_WIDTH - 2;
+    // std::string emptyLine(lineSize, '.');
+    // std::string filledLine(lineSize, '=');
+    // while(bottom > 0 && bottom >= top) {
+    //     bottom--;
+    //     std::string line = f->fieldLayout.substr((bottom * FIELD_WIDTH) + 1, lineSize);
+    //     if(line.find(".") == std::string::npos) {
+    //         result++;
+    //         f->fieldLayout.replace((bottom * FIELD_WIDTH) + 1, lineSize, filledLine);
+    //     }
+    // }
+    // if(result == 4)
+    //   result += 4;
+    // if(result == 3)
+    //     result += 2;
+    // if(result == 2)
+    //     result++;
+    // return result;
+}
+
+bool checkGameOver(PlayField* f)
+{
+    bool isOver = false;
+    int startRow = START_FIELD_ROW > 0? START_FIELD_ROW - 1 : 0;
+    for(int i = 1; i < FIELD_WIDTH - 1; i++) {
+        if(f->fieldLayout[(startRow * FIELD_WIDTH) + i] == '.') {
+            isOver = true;
+            break;
+        }
+    }
+    return isOver;
 }
