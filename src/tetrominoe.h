@@ -1,16 +1,12 @@
 #ifndef TETROMINOE_H
 #define TETROMINOE_H
 
-#include "field.h"
-#include <string>
+#include <GLES3/gl3.h>
 #include <SDL3/SDL_pixels.h>
-#include <SDL3/SDL_render.h>
+#include "graphics.h"
+#include "shaders.h"
 
-#if DRAWFULL
-    #define VERTICES_COUNT 480
-#else
-    #define VERTICES_COUNT 120
-#endif
+#define TETROMINOE_VERTICES_COUNT 48
 
 typedef enum {
     TT_Line = 0,
@@ -25,21 +21,27 @@ typedef enum {
 
 typedef struct sTetrominoe {
     int wx, wy;
-    float x,y;
+    float fx, fy;
+    int rotationState;
     bool isAlive;
+    char shapeLayout[17];
+    float centerOffsetX;
+    float centerOffsetY;
     SDL_FColor color;
-    SDL_Vertex vertices[VERTICES_COUNT];
-    std::string shapeLayout;
     TetrominoeType type;
+    
+    GLuint vao;
+    GLuint vbo;
+    float proj[16];
+    float model[16];
+    Vertex vertices[TETROMINOE_VERTICES_COUNT];
 } Tetrominoe;
 
-Tetrominoe createTetrominoe(TetrominoeType type);
-void attachTetrominoeToField(Tetrominoe* t, PlayField* f, int x = 0, int y = 0);
+Tetrominoe* createTetrominoe(TetrominoeType type);
 void moveTetrominoe(int x, int y, Tetrominoe* t);
-void placeTetrominoe(Tetrominoe* t, float x, float y);
+void placeTetrominoe(int x, int y, Tetrominoe* t);
+void rotateLayout(char* layout);
 void rotateTetrominoe(Tetrominoe* t);
-void drawTetrominoe(SDL_Renderer* renderer, Tetrominoe* t);
-void rotateLayout(std::string* layout);
-bool checkCollissions(Tetrominoe* t, PlayField* f, int offsetX, int offsetY, bool rotated);
+void drawTetrominoe(Tetrominoe* t, GameShader* shader);//GLint program);
 
 #endif // TETROMINOE_H

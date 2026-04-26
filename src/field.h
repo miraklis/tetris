@@ -1,34 +1,47 @@
 #ifndef FIELD_H
 #define FIELD_H
 
-#include <string>
-#include <vector>
-#include <SDL3/SDL_render.h>
+#include <stddef.h>
+#include <stdbool.h>
+#include <GLES3/gl3.h>
+#include "graphics.h"
+#include "shaders.h"
+#include "tetrominoe.h"
+#include "player.h"
 
-#define FIELD_WIDTH 12
-#define FIELD_HEIGHT 24
-#define BLOCK_WIDTH 34
-#define BLOCK_HEIGHT 34
-#define WALL_COLOR {0.1f, 0.1f, 0.1f, 1.0f}
-#define STACK_COLOR {0.5f, 0.5f, 0.5f, 1.0f}
-#define START_FIELD_ROW 4
-
-struct sTetrominoe;
-
-typedef struct {
-    float x, y;
-    //std::string fieldLayout;
-    //std::vector<SDL_Vertex> vertices;
+typedef struct sPlayField {
+    int wx, wy;
+    float rx, ry;
     char fieldLayout[FIELD_WIDTH * FIELD_HEIGHT];
+
+    unsigned long lastTick;
+    unsigned long lastStepTick;
+    unsigned int piecesCnt;
+    bool pieceOnStack;
+
     size_t vertCount;
-    SDL_Vertex* vertices;//[FIELD_WIDTH * FIELD_HEIGHT * 30];
+    Tetrominoe* currentPiece;
+    Tetrominoe* nextPiece;
+
+    GLuint vao;
+    GLuint vbo;
+    float proj[16];
+    float model[16];
+    Vertex* vertices;
 } PlayField;
 
-PlayField createField(float x = 0.0f, float y = 0.0f);
-void drawField(SDL_Renderer* renderer, PlayField* f);
+PlayField* createField(int wx, int wy);
+void createNewTetrominoes(PlayField* f);
+void getNextTetrominoe(PlayField* f);
+void moveCurrentPiece(PlayField* f, int x, int y);
+void rotateCurrentPiece(PlayField* f);
+
+void drawField(PlayField* f, GameShader* shader);
 void updateField(PlayField* f);
 void removeFilledLines(PlayField* f);
-int checkForFilledLines(PlayField* f, sTetrominoe* t);
+int checkForFilledLines(PlayField* f, Tetrominoe* t);
 bool checkGameOver(PlayField* f);
+bool checkCollissions(PlayField* f, Tetrominoe* t, int offsetX, int offsetY, bool rotated);
+void addPieceOnStack(PlayField* f, Tetrominoe* t);
 
 #endif // FIELD_H
