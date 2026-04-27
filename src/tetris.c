@@ -240,7 +240,8 @@ int main(int argc, char** argv)
         // ************************
         // Quit game if we close the window or select exit from the menu
         if(ev.type == SDL_EVENT_QUIT || menu->action == 3) {
-            game.running = false;        
+            SDL_zero(keyPress);
+            game.running = false;
         }
         // Hide menu
         if(menu->action == 0 && game.gameState == GameState_InMenu && game.lastState != GameState_InMenu) {
@@ -300,23 +301,26 @@ int main(int argc, char** argv)
             scoreBoard->visible = true;
         }
         menu->action = -1;
-        // Game Actions
-        // Pause Game
-        if(keyPress[6] && game.gameState == GameState_Playing) {
-            game.gameState = GameState_Paused;
-            keyPress[6] = false;
-        }
-        // Unpause Game
-        if(keyPress[6] && game.gameState == GameState_Paused) {
-            game.gameState = GameState_Playing;
-            keyPress[6] = false;
-        }
+        // // Game Actions
+        // // Pause Game
+        // if(keyPress[6] && game.gameState == GameState_Playing) {
+        //     game.gameState = GameState_Paused;
+        //     keyPress[6] = false;
+        // }
+        // // Unpause Game
+        // if(keyPress[6] && game.gameState == GameState_Paused) {
+        //     game.gameState = GameState_Playing;
+        //     keyPress[6] = false;
+        // }
         // While paused disable all movements
         if(game.gameState == GameState_Paused) {
             SDL_zero(keyPress);
         }
         // Pieces Movements
         // Player 1
+        if(player[0] == NULL || player[0]->playerState != PlayerState_Playing) {
+            keyPress[2] = keyPress[3] = keyPress[4] = keyPress[5] = false;
+        }
         if(keyPress[2]) {
             moveCurrentPiece(field[0], -1, 0);
         }
@@ -332,6 +336,9 @@ int main(int argc, char** argv)
             rotateCurrentPiece(field[0]);
         }
         // Player 2
+        if(player[1] == NULL || player[1]->playerState != PlayerState_Playing) {
+            keyPress[7] = keyPress[8] = keyPress[9] = keyPress[10] = false;
+        }
         if(keyPress[7]) {
             moveCurrentPiece(field[1], -1, 0);
         }
