@@ -88,9 +88,7 @@ ScoreBoard* createScoreBoard(float x, float y, float fontSize)
     for(int i = 0; i < MAX_SCORES; i++) {
         char scoreText[22];
         snprintf(scoreText, sizeof(scoreText), "%s %6d", positions[i], sb->scores[i]);
-        sb->items[i] = (Text*)malloc(sizeof(Text));
-        initText(
-            sb->items[i], 
+        sb->items[i] = createText(
             scoreText,
             FONT,
             sb->fontSize,

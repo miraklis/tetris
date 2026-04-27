@@ -40,6 +40,7 @@ void freeGameObjects(PlayField* field[MAX_PLAYERS], Player* player[MAX_PLAYERS])
             field[i] = NULL;
         }
         if(player[i] != NULL) {
+            free(player[i]->scoreText);
             free(player[i]);
             player[i] = NULL;
         }
@@ -201,7 +202,6 @@ int main(int argc, char** argv)
     Menu* menu;
     menu = createMenu("1 PLAYER GAME|2 PLAYER GAME|EXIT|", wWidth / 2.0f, wHeight / 2.0f, 24.0f); 
 
-    
     PlayField* field[MAX_PLAYERS];
     Player* player[MAX_PLAYERS];
     for(int i=0; i < MAX_PLAYERS; i++) {
@@ -212,8 +212,7 @@ int main(int argc, char** argv)
     size_t sbFontSize = 22.0f;
     ScoreBoard* scoreBoard = createScoreBoard(wWidth / 2 - (sbFontSize * 12), wHeight / 2 - (sbFontSize * 5), sbFontSize);
     
-    Text* gameStatusMessage = (Text*)malloc(sizeof(Text));
-    initText(gameStatusMessage, "GAME OVER !!!", FONT, 48.0f, wWidth / 2.0f, wHeight / 2.0f);
+    Text* gameStatusMessage = createText("GAME STARTED !!!", FONT, 48.0f, wWidth / 2.0f, wHeight / 2.0f);
     setTextColor(gameStatusMessage, 1.0f, 0.0f, 0.0f);
 
     bool keyPress[11] = {0};
@@ -256,9 +255,8 @@ int main(int argc, char** argv)
             field[0] = createField(1, 0);
             createNewTetrominoes(field[0]);
             player[0] = createPlayer(1);
-            player[0]->scoreText = (Text*)malloc(sizeof(Text));
-            initText(
-                player[0]->scoreText, "Player 1 :     0", FONT,
+            player[0]->scoreText = createText(
+                "Player 1 :     0", FONT,
                 22.0f, field[0]->rx + (FIELD_WIDTH * BLOCK_WIDTH), field[0]->ry + 44.0f
             );
             game.gameState = GameState_Playing;
@@ -273,21 +271,16 @@ int main(int argc, char** argv)
             field[1] = createField(1, 0);
             createNewTetrominoes(field[1]);
             player[1] = createPlayer(2);
-            player[1]->scoreText = (Text*)malloc(sizeof(Text));
-            initText(
-                player[1]->scoreText, "Player 2 :     0", FONT,
+            player[1]->scoreText = createText(
+                "Player 2 :     0", FONT,
                 22.0f, field[1]->rx + (FIELD_WIDTH * BLOCK_WIDTH), field[1]->ry + 44.0f
             );
-
-
-
             field[0] = createField((int)(dm->w / BLOCK_WIDTH) - FIELD_WIDTH, 0);
             createNewTetrominoes(field[0]);
             placeTetrominoe(field[0]->wx - 4, FIELD_START_ROW, field[0]->nextPiece);
             player[0] = createPlayer(1);
-            player[0]->scoreText = (Text*)malloc(sizeof(Text));
-            initText(
-                player[0]->scoreText, "Player 1 :     0", FONT,
+            player[0]->scoreText = createText(
+                "Player 1 :     0", FONT,
                 22.0f, field[0]->rx - (22.0f * 22.0f), field[0]->ry + 44.0f
             );
 
@@ -297,19 +290,9 @@ int main(int argc, char** argv)
             scoreBoard->visible = true;
         }
         menu->action = -1;
-        // // Game Actions
-        // // Pause Game
-        // if(keyPress[6] && game.gameState == GameState_Playing) {
-        //     game.gameState = GameState_Paused;
-        //     keyPress[6] = false;
-        // }
-        // // Unpause Game
-        // if(keyPress[6] && game.gameState == GameState_Paused) {
-        //     game.gameState = GameState_Playing;
-        //     keyPress[6] = false;
-        // }
-        // While paused disable all movements
-        if(game.gameState == GameState_Paused) {
+        // Game Actions
+        // While in menu or paused disable all movements
+        if(game.gameState == GameState_InMenu || game.gameState == GameState_Paused) {
             SDL_zero(keyPress);
         }
         // Pieces Movements
@@ -449,7 +432,7 @@ int main(int argc, char** argv)
     freeGameObjects(field, player);   
     free(splash_screen);
     free(menu);
-    //free(sb);
+    free(scoreBoard);
 
     // Cleanup
     SDL_GL_DestroyContext(context);

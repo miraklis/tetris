@@ -48,8 +48,10 @@ static GLuint loadTTFTexture(unsigned char bitmap[512*512])
     return tex;
 }
 
-void initStaticText(Text* t, char* str, const char* fontName, float fontSize, float x, float y)
+//void initStaticText(Text* t, char* str, const char* fontName, float fontSize, float x, float y)
+Text* createStaticText(char* str, const char* fontName, float fontSize, float x, float y)
 {
+    Text* t = (Text*)malloc(sizeof(Text));
     t->type = TXTTYPE_STATIC;
     t->font = loadTTFFont(fontName);
     t->fontSize = fontSize;
@@ -58,8 +60,8 @@ void initStaticText(Text* t, char* str, const char* fontName, float fontSize, fl
     unsigned char bitmap[512*512];
     stbtt_BakeFontBitmap(t->font, 0, t->fontSize, bitmap, 512, 512, 32, 96, t->cdata);
     t->texture = loadTTFTexture(bitmap);
-    free(t->verts);
-    t->verts = NULL;
+    //free(t->verts);
+    //t->verts = NULL;
     size_t charCount = slength(str, MAX_TEXT);//strnlen(str, MAX_TEXT);
     t->verts = (GlyphVertex*)malloc(sizeof(GlyphVertex) * 6 * charCount);
 
@@ -94,10 +96,13 @@ void initStaticText(Text* t, char* str, const char* fontName, float fontSize, fl
     glEnableVertexAttribArray(1);
     orthoMatrix(0, 1920, 1080, 0, -1, 1, t->proj);
     t->color = (Color){1.0f, 1.0f, 1.0f, 1.0f};
+    return t;
 }
 
-void initText(Text* t, char* str, const char* fontName, float fontSize, float x, float y)
+//void initText(Text* t, char* str, const char* fontName, float fontSize, float x, float y)
+Text* createText(char* str, const char* fontName, float fontSize, float x, float y)
 {
+    Text* t = (Text*)malloc(sizeof(Text));
     t->type = TXTTYPE_DYNAMIC;
     t->font = loadTTFFont(fontName);
     t->fontSize = fontSize;
@@ -106,8 +111,6 @@ void initText(Text* t, char* str, const char* fontName, float fontSize, float x,
     unsigned char bitmap[512*512];
     stbtt_BakeFontBitmap(t->font, 0, t->fontSize, bitmap, 512, 512, 32, 96, t->cdata);
     t->texture = loadTTFTexture(bitmap);
-    free(t->verts);
-    t->verts = NULL;
     t->verts = (GlyphVertex*)malloc(sizeof(GlyphVertex) * 6 * MAX_TEXT);
 
     int count=0;
@@ -140,6 +143,7 @@ void initText(Text* t, char* str, const char* fontName, float fontSize, float x,
     glEnableVertexAttribArray(1);
     orthoMatrix(0, dm->w, dm->h, 0, -1, 1, t->proj);
     t->color = (Color){1.0f, 1.0f, 1.0f, 1.0f};
+    return t;
 }
 
 void setText(Text* t, char* str)
@@ -272,6 +276,19 @@ void moveText(Text* t, float x, float y)
     t->vertsCount = count;
     glBindBuffer(GL_ARRAY_BUFFER,t->vbo);
     glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(GlyphVertex)*t->vertsCount, t->verts);
+}
+
+void destroyText(Text* t)
+{
+    if(t == NULL)
+        return;
+    glDeleteTextures(1, &t->texture);
+    glDeleteBuffers(1, &t->vbo);
+    glDeleteVertexArrays(1, &t->vao);
+    free(t->font);
+    free(t->verts);
+    free(t);
+    t = NULL;
 }
 
 void drawText(Text* t, ColoredTextureShader* shader) //GLuint program)

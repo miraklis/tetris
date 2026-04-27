@@ -56,12 +56,12 @@ Menu* createMenu(char* items, float x, float y, float fontSize)
         if(charCnt > maxSize) {
             maxSize = charCnt;
         }
-        memset(item, 0, 256);
+        memset(item, 0, MAX_TEXT);
         itemCnt++;
         charCnt = 0;
         it++;
     }
-    m->items = (Text*)malloc(sizeof(Text) * itemCnt);
+    m->items = (Text**)malloc(sizeof(Text*) * itemCnt);
     m->itemsCnt = itemCnt;
     m->w = (maxSize * fontSize) + (paddingTextX * 2.0f);
     m->h = m->itemsCnt * rowHeight;
@@ -74,7 +74,7 @@ Menu* createMenu(char* items, float x, float y, float fontSize)
     charCnt = 0;
     itemCnt = 0;
     it = items;
-    memset(item, 0, 256);
+    memset(item, 0, MAX_TEXT);
     while(*it) {
         float alignOffsetX = 0.0f;
         if(*it != '|') {
@@ -86,16 +86,15 @@ Menu* createMenu(char* items, float x, float y, float fontSize)
         if(charCnt < maxSize) {
             alignOffsetX = ((maxSize - charCnt) * fontSize) / 2.0f;
         }
-        m->items[itemCnt].verts = NULL;        
-        initStaticText(
-            &m->items[itemCnt],
+        //m->items[itemCnt]->verts = NULL;
+        m->items[itemCnt] = createStaticText(
             item,
             FONT,
             fontSize,
             m->x + paddingTextX + alignOffsetX,
             m->y + (itemCnt * rowHeight) + paddingTextY
         );
-        memset(item, 0, 256);
+        memset(item, 0, MAX_TEXT);
         itemCnt++;
         charCnt = 0;
         it++;
@@ -178,7 +177,7 @@ void drawMenu(Menu* menu, GameShader* gameShader, ColoredTextureShader* uiShader
     glDrawArrays(GL_TRIANGLES, 0, MENU_VERTICES_COUNT);
 
     for(int i = 0; i < menu->itemsCnt; i++) {
-        drawText(&menu->items[i], uiShader);
+        drawText(menu->items[i], uiShader);
     }
 
 }

@@ -16,7 +16,7 @@ typedef struct {
     bool visible;
     size_t itemsCnt;
     Vertex vertices[12];
-    Text* items;
+    Text** items;
 
     GLuint vao;
     GLuint vbo;

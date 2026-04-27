@@ -37,8 +37,10 @@ typedef struct Text {
     GlyphVertex* verts;
 } Text;
 
-void initStaticText(Text* t, char* str, const char* fontName, float fontSize, float x, float y);
-void initText(Text* t, char* str, const char* fontName, float fontSize, float x, float y);
+// void initStaticText(Text* t, char* str, const char* fontName, float fontSize, float x, float y);
+// void initText(Text* t, char* str, const char* fontName, float fontSize, float x, float y);
+Text* createStaticText(char* str, const char* fontName, float fontSize, float x, float y);
+Text* createText(char* str, const char* fontName, float fontSize, float x, float y);
 void moveText(Text* t, float x, float y);
 void setText(Text* t, char* str);
 void changeText(Text* t, int pos, char* str);

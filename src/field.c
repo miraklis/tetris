@@ -185,6 +185,7 @@ void getNextTetrominoe(PlayField* f)
 {
     int prevX = f->nextPiece->wx;
     int prevY = f->nextPiece->wy;
+    free(f->currentPiece);
     f->currentPiece = f->nextPiece;
     f->currentPiece->isAlive = true;
     placeTetrominoe((FIELD_WIDTH / 2) - 2, 0, f->currentPiece);
@@ -301,7 +302,7 @@ int checkForFilledLines(PlayField* f, Tetrominoe* t)
 bool checkGameOver(PlayField* f)
 {
     bool isOver = false;
-    int startRow = FIELD_START_ROW > 0? FIELD_START_ROW - 1 : 0;
+    int startRow = FIELD_START_ROW > 0 ? FIELD_START_ROW - 1 : 0;
     for(int i = 1; i < FIELD_WIDTH - 1; i++) {
         if(f->fieldLayout[(startRow * FIELD_WIDTH) + i] != '.') {
             isOver = true;
