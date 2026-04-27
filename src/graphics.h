@@ -8,8 +8,8 @@
 #define FIELD_WIDTH 12
 #define FIELD_HEIGHT 25
 #define FIELD_START_ROW 4
-//#define WALL_COLOR {0.1f, 0.1f, 0.1f, 1.0f}
-//#define STACK_COLOR {0.5f, 0.5f, 0.5f, 1.0f}
+
+#define FONT "assets/PressStart2P-Regular.ttf"
 
 typedef struct sVertex {
     float x, y;

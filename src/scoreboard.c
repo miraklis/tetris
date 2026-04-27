@@ -94,7 +94,7 @@ ScoreBoard* createScoreBoard(float x, float y, float fontSize)
         initText(
             sb->items[i], 
             scoreText,
-            "PressStart2P-Regular.ttf",
+            FONT,
             sb->fontSize,
             sb->x,
             sb->y + (i * sb->fontSize * 1.5f)

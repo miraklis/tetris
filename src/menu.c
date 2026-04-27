@@ -93,7 +93,7 @@ Menu* createMenu(char* items, float x, float y, float fontSize)
         initStaticText(
             &m->items[itemCnt],
             item,
-            "PressStart2P-Regular.ttf",
+            FONT,
             fontSize,
             m->x + paddingTextX + alignOffsetX,
             m->y + (itemCnt * rowHeight) + paddingTextY

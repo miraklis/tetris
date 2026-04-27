@@ -262,7 +262,7 @@ int main(int argc, char** argv)
             player[0] = createPlayer(1);
             player[0]->scoreText = (Text*)malloc(sizeof(Text));
             initText(
-                player[0]->scoreText, "Player 1 :     0", "PressStart2P-Regular.ttf",
+                player[0]->scoreText, "Player 1 :     0", FONT,
                 22.0f, field[0]->rx + (FIELD_WIDTH * BLOCK_WIDTH), field[0]->ry + 44.0f
             );
             game.gameState = GameState_Playing;
@@ -279,7 +279,7 @@ int main(int argc, char** argv)
             player[1] = createPlayer(2);
             player[1]->scoreText = (Text*)malloc(sizeof(Text));
             initText(
-                player[1]->scoreText, "Player 2 :     0", "PressStart2P-Regular.ttf",
+                player[1]->scoreText, "Player 2 :     0", FONT,
                 22.0f, field[1]->rx + (FIELD_WIDTH * BLOCK_WIDTH), field[1]->ry + 44.0f
             );
 
@@ -291,7 +291,7 @@ int main(int argc, char** argv)
             player[0] = createPlayer(1);
             player[0]->scoreText = (Text*)malloc(sizeof(Text));
             initText(
-                player[0]->scoreText, "Player 1 :     0", "PressStart2P-Regular.ttf",
+                player[0]->scoreText, "Player 1 :     0", FONT,
                 22.0f, field[0]->rx - (22.0f * 22.0f), field[0]->ry + 44.0f
             );
 
