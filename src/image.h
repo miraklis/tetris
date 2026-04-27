@@ -1,7 +1,7 @@
 #ifndef IMAGE_H
 #define IMAGE_H
 
-#include <GLES3/gl3.h>
+#include "graphics.h"
 #include "shaders.h"
 
 typedef struct sImage {

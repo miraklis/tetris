@@ -1,14 +1,6 @@
-#include <stdlib.h>
-#include <stdbool.h>
-#include <stdio.h>
 #include <time.h>
-#include <GLES3/gl3.h>
-#include <SDL3/SDL.h>
-#include <SDL3/SDL_events.h>
-#include <SDL3/SDL_video.h>
-#include <SDL3_image/SDL_image.h>
+#include "std.h"
 #include "graphics.h"
-#include "scoreboard.h"
 #include "shaders.h"
 #include "field.h"
 #include "player.h"
@@ -219,6 +211,10 @@ int main(int argc, char** argv)
     
     size_t sbFontSize = 22.0f;
     ScoreBoard* scoreBoard = createScoreBoard(wWidth / 2 - (sbFontSize * 12), wHeight / 2 - (sbFontSize * 5), sbFontSize);
+    
+    Text* gameStatusMessage = (Text*)malloc(sizeof(Text));
+    initText(gameStatusMessage, "GAME OVER !!!", FONT, 48.0f, wWidth / 2.0f, wHeight / 2.0f);
+    setTextColor(gameStatusMessage, 1.0f, 0.0f, 0.0f);
 
     bool keyPress[11] = {0};
     SDL_Event ev;

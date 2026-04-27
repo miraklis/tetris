@@ -1,9 +1,7 @@
 #ifndef TEXT_H
 #define TEXT_H
 
-#include <stddef.h>
-#include <GLES3/gl3.h>
-#include <SDL3/SDL.h>
+#include "graphics.h"
 #include "shaders.h"
 #include "stb_truetype.h"
 
@@ -29,7 +27,7 @@ typedef struct Text {
     GLint locColor;
     float proj[16];
     GLuint texture;
-    SDL_FColor color;
+    Color color;
     size_t vertsCount;
     float x , y;
     float fontSize;
@@ -46,6 +44,6 @@ void setText(Text* t, char* str);
 void changeText(Text* t, int pos, char* str);
 void setTextColor(Text* t, float r, float g, float b);
 void setFontSize(Text* t, float fontSize);
-void drawText(Text* t, ColoredTextureShader* shader);//GLuint program);
+void drawText(Text* t, ColoredTextureShader* shader);
 
 #endif // TEXT_H

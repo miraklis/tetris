@@ -1,6 +1,4 @@
-#include <stdio.h>
-#include <unistd.h>
-#include <stdlib.h>
+#include "std.h"
 #include "shaders.h"
 #include "text.h"
 #include "scoreboard.h"

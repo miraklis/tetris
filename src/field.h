@@ -1,9 +1,6 @@
 #ifndef FIELD_H
 #define FIELD_H
 
-#include <stddef.h>
-#include <stdbool.h>
-#include <GLES3/gl3.h>
 #include "graphics.h"
 #include "shaders.h"
 #include "tetrominoe.h"

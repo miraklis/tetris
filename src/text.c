@@ -1,15 +1,7 @@
-#ifndef _POSIX_C_SOURCE
-    #define _POSIX_C_SOURCE 200809L
-#endif
-#include <stdio.h>
-#include <string.h>
-#include <GLES3/gl3.h>
-#include <SDL3/SDL.h>
-#include <SDL3_image/SDL_image.h>
-#include <SDL3/SDL_pixels.h>
-#include "text.h"
+#include "std.h"
 #include "graphics.h"
 #include "shaders.h"
+#include "text.h"
 
 #define STB_TRUETYPE_IMPLEMENTATION
 #include "stb_truetype.h"
@@ -68,7 +60,7 @@ void initStaticText(Text* t, char* str, const char* fontName, float fontSize, fl
     t->texture = loadTTFTexture(bitmap);
     free(t->verts);
     t->verts = NULL;
-    size_t charCount = strnlen(str, MAX_TEXT);
+    size_t charCount = slength(str, MAX_TEXT);//strnlen(str, MAX_TEXT);
     t->verts = (GlyphVertex*)malloc(sizeof(GlyphVertex) * 6 * charCount);
 
     int count=0;
@@ -101,7 +93,7 @@ void initStaticText(Text* t, char* str, const char* fontName, float fontSize, fl
     glVertexAttribPointer(1,2,GL_FLOAT,GL_FALSE,sizeof(GlyphVertex),(void*)(2*sizeof(float)));
     glEnableVertexAttribArray(1);
     orthoMatrix(0, 1920, 1080, 0, -1, 1, t->proj);
-    t->color = (SDL_FColor){1.0f, 1.0f, 1.0f, 1.0f};
+    t->color = (Color){1.0f, 1.0f, 1.0f, 1.0f};
 }
 
 void initText(Text* t, char* str, const char* fontName, float fontSize, float x, float y)
@@ -147,7 +139,7 @@ void initText(Text* t, char* str, const char* fontName, float fontSize, float x,
     glVertexAttribPointer(1,2,GL_FLOAT,GL_FALSE,sizeof(GlyphVertex),(void*)(2*sizeof(float)));
     glEnableVertexAttribArray(1);
     orthoMatrix(0, dm->w, dm->h, 0, -1, 1, t->proj);
-    t->color = (SDL_FColor){1.0f, 1.0f, 1.0f, 1.0f};
+    t->color = (Color){1.0f, 1.0f, 1.0f, 1.0f};
 }
 
 void setText(Text* t, char* str)

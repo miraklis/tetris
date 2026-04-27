@@ -1,8 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <stddef.h>
-#include <GLES3/gl3.h>
-#include <SDL3/SDL.h>
+#include "std.h"
 #include "graphics.h"
 #include "shaders.h"
 #include "tetrominoe.h"
@@ -40,7 +36,7 @@ Tetrominoe* createTetrominoe(TetrominoeType type)
         // ..X.
         // ..X.
             snprintf(t->shapeLayout, sizeof(t->shapeLayout), "%s", "..X...X...X...X.");
-            t->color = (SDL_FColor){1.0f, 0.0f, 0.0f, 1.0f};
+            t->color = (Color){1.0f, 0.0f, 0.0f, 1.0f};
             break;
         case TT_Square:
         // ....
@@ -48,7 +44,7 @@ Tetrominoe* createTetrominoe(TetrominoeType type)
         // .XX.
         // ....
             snprintf(t->shapeLayout, sizeof(t->shapeLayout), "%s", ".....XX..XX.....");
-            t->color = (SDL_FColor){0.0f, 0.0f, 1.0f, 1.0f};
+            t->color = (Color){0.0f, 0.0f, 1.0f, 1.0f};
             break;
         case TT_T:
         // ..X.
@@ -56,7 +52,7 @@ Tetrominoe* createTetrominoe(TetrominoeType type)
         // ..X.
         // ....
             snprintf(t->shapeLayout, sizeof(t->shapeLayout), "%s", "..X..XX...X.....");
-            t->color = (SDL_FColor){0.0f, 1.0f, 0.0f, 1.0f};
+            t->color = (Color){0.0f, 1.0f, 0.0f, 1.0f};
             break;
         case TT_L1:
         // .X..
@@ -64,7 +60,7 @@ Tetrominoe* createTetrominoe(TetrominoeType type)
         // .XX.
         // ....
             snprintf(t->shapeLayout, sizeof(t->shapeLayout), "%s", ".X...X...XX.....");
-            t->color = (SDL_FColor){1.0f, 1.0f, 0.0f, 1.0f};
+            t->color = (Color){1.0f, 1.0f, 0.0f, 1.0f};
             break;
         case TT_L2:
         // ..X.
@@ -72,7 +68,7 @@ Tetrominoe* createTetrominoe(TetrominoeType type)
         // .XX.
         // ....
             snprintf(t->shapeLayout, sizeof(t->shapeLayout), "%s", "..X...X..XX.....");
-            t->color = (SDL_FColor){0.8f, 0.2f, 0.5f, 1.0f};
+            t->color = (Color){0.8f, 0.2f, 0.5f, 1.0f};
             break;
         case TT_h1:
         // .X..
@@ -80,7 +76,7 @@ Tetrominoe* createTetrominoe(TetrominoeType type)
         // ..X.
         // ....
             snprintf(t->shapeLayout, sizeof(t->shapeLayout), "%s", ".X...XX...X.....");
-            t->color = (SDL_FColor){0.0f, 1.0f, 1.0f, 1.0f};
+            t->color = (Color){0.0f, 1.0f, 1.0f, 1.0f};
             break;
         case TT_h2:
         // ..X.
@@ -88,11 +84,11 @@ Tetrominoe* createTetrominoe(TetrominoeType type)
         // .X..
         // ....
             snprintf(t->shapeLayout, sizeof(t->shapeLayout), "%s", "..X..XX..X......");
-            t->color = (SDL_FColor){0.3f, 0.2f, 0.9f, 1.0f};
+            t->color = (Color){0.3f, 0.2f, 0.9f, 1.0f};
             break;
         default:
             snprintf(t->shapeLayout, sizeof(t->shapeLayout), "%s", "................");
-            t->color = (SDL_FColor){0.0f, 0.0f, 0.0f, 0.0f};
+            t->color = (Color){0.0f, 0.0f, 0.0f, 0.0f};
             break;        
     }
     // move the origin to the center of the piece for easier rotation
@@ -108,10 +104,10 @@ Tetrominoe* createTetrominoe(TetrominoeType type)
         } else {
             float bw = BLOCK_WIDTH;
             float bh = BLOCK_HEIGHT;            
-            float bx = ((strParser % 4) - t->centerOffsetX) * bw;
-            float by = ((strParser / 4) - t->centerOffsetY) * bh;        
+            float bx = ((int)(strParser % 4) - t->centerOffsetX) * bw;
+            float by = ((int)(strParser / 4) - t->centerOffsetY) * bh;        
             // Background block
-            SDL_FColor wc = {0.6f, 0.6f, 0.6f, 1.0f};
+            Color wc = {0.6f, 0.6f, 0.6f, 1.0f};
             t->vertices[vertCnt++] = (Vertex){bx, by, wc.r, wc.g, wc.b, wc.a};
             t->vertices[vertCnt++] = (Vertex){bx + bw, by, wc.r, wc.g, wc.b, wc.a};
             t->vertices[vertCnt++] = (Vertex){bx, by + bh, wc.r, wc.g, wc.b, wc.a};

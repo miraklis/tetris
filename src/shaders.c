@@ -1,7 +1,4 @@
-#include <stdlib.h>
-#include <stddef.h>
-#include <string.h>
-#include <GLES3/gl3.h>
+#include "std.h"
 #include "shaders.h"
 
 static GLuint currentProgram;

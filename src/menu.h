@@ -1,8 +1,6 @@
 #ifndef MENU_H
 #define MENU_H
 
-#include <GLES3/gl3.h>
-#include <SDL3/SDL_events.h>
 #include "graphics.h"
 #include "shaders.h"
 #include "text.h"

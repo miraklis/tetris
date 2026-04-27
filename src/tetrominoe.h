@@ -1,8 +1,7 @@
 #ifndef TETROMINOE_H
 #define TETROMINOE_H
 
-#include <GLES3/gl3.h>
-#include <SDL3/SDL_pixels.h>
+#include "std.h"
 #include "graphics.h"
 #include "shaders.h"
 
@@ -27,7 +26,7 @@ typedef struct sTetrominoe {
     char shapeLayout[17];
     float centerOffsetX;
     float centerOffsetY;
-    SDL_FColor color;
+    Color color;
     TetrominoeType type;
     
     GLuint vao;

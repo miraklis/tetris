@@ -1,8 +1,10 @@
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
+#include "std.h"
 #include "graphics.h"
 #include "shaders.h"
 #include "image.h"
+
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 
 Image* loadImage(char* path)
 {

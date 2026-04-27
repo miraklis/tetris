@@ -1,6 +1,7 @@
 #ifndef GRAPHICS_H
 #define GRAPHICS_H
 
+#include <GLES3/gl3.h>
 #include <SDL3/SDL.h>
 
 #define BLOCK_WIDTH 34
@@ -15,6 +16,10 @@ typedef struct sVertex {
     float x, y;
     float r, g, b, a;
 } Vertex;
+
+typedef struct sColor {
+    float r, g, b, a;
+} Color;
 
 extern const SDL_DisplayMode* dm;
 

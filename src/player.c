@@ -1,6 +1,4 @@
-#include <stdlib.h>
-#include "field.h"
-#include "tetrominoe.h"
+#include "std.h"
 #include "player.h"
 
 Player* createPlayer(int playerNum)

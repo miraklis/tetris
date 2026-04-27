@@ -1,8 +1,4 @@
-#include <stdio.h>
-#include <stddef.h>
-#include <stdlib.h>
-#include <GLES3/gl3.h>
-#include <SDL3/SDL_pixels.h>
+#include "std.h"
 #include "graphics.h"
 #include "shaders.h"
 #include "tetrominoe.h"
@@ -32,7 +28,7 @@ void updateField(PlayField* f)
     Vertex* v = (Vertex*)malloc(sizeof(Vertex) * f->vertCount);
     f->vertices = v;
     
-    SDL_FColor vertColor;
+    Color vertColor;
     vertColor.a = 1.0f;
     strParser = 0;
     int cnt = 0;
@@ -102,7 +98,7 @@ void updateField(PlayField* f)
         float bx = ((int)(strParser % FIELD_WIDTH) * bw);
         float by = ((int)(strParser / FIELD_WIDTH) * bh);
         // Background block (used as border of the block)
-        SDL_FColor wc = {0.6f, 0.6f, 0.6f, 1.0f};
+        Color wc = {0.6f, 0.6f, 0.6f, 1.0f};
         v[cnt++] = (Vertex){bx, by, wc.r, wc.g, wc.b, wc.a};
         v[cnt++] = (Vertex){bx + bw, by, wc.r, wc.g, wc.b, wc.a};
         v[cnt++] = (Vertex){bx, by + bh, wc.r, wc.g, wc.b, wc.a};

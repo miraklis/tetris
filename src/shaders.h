@@ -1,7 +1,7 @@
 #ifndef SHADERS_H
 #define SHADERS_H
 
-#include <GLES3/gl3.h>
+#include "graphics.h"
 
 #define MAX_UNIFORMS 10
 

@@ -1,8 +1,5 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <GLES3/gl3.h>
-#include <SDL3/SDL_events.h>
+//#include <string.h>
+#include "std.h"
 #include "graphics.h"
 #include "shaders.h"
 #include "text.h"
