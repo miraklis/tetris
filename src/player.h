@@ -14,8 +14,10 @@ typedef struct sPlayer {
     unsigned int playerScore;
     float gameSpeed;
     char playerNum;
+    char statusMessage[20];
     PlayerState playerState;
     Text* scoreText;
+    Text* statusText;
 } Player;
 
 Player* createPlayer(int playerNum);

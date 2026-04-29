@@ -96,6 +96,7 @@ Text* createStaticText(char* str, const char* fontName, float fontSize, float x,
     glEnableVertexAttribArray(1);
     orthoMatrix(0, 1920, 1080, 0, -1, 1, t->proj);
     t->color = (Color){1.0f, 1.0f, 1.0f, 1.0f};
+    t->visible = true;
     return t;
 }
 
@@ -143,6 +144,7 @@ Text* createText(char* str, const char* fontName, float fontSize, float x, float
     glEnableVertexAttribArray(1);
     orthoMatrix(0, dm->w, dm->h, 0, -1, 1, t->proj);
     t->color = (Color){1.0f, 1.0f, 1.0f, 1.0f};
+    t->visible = true;
     return t;
 }
 
@@ -291,8 +293,11 @@ void destroyText(Text* t)
     t = NULL;
 }
 
-void drawText(Text* t, ColoredTextureShader* shader) //GLuint program)
+void drawText(Text* t, ColoredTextureShader* shader)
 {
+    if(t == NULL || !t->visible)
+        return;
+
     useProgram(shader->program);
     glBindVertexArray(t->vao);
     glUniformMatrix4fv(shader->locProj, 1, GL_FALSE, t->proj);

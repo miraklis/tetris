@@ -20,13 +20,8 @@ typedef struct GlyphVertex {
 
 typedef struct Text {
     enum TextType type;
-    GLuint vao;
-    GLuint vbo;
-    GLint locProj;
-    GLint locTexture;
-    GLint locColor;
+    bool visible;
     float proj[16];
-    GLuint texture;
     Color color;
     size_t vertsCount;
     float x , y;
@@ -34,6 +29,13 @@ typedef struct Text {
     stbtt_bakedchar cdata[96];
     unsigned char* font;
     char txt[MAX_TEXT];
+
+    GLuint vao;
+    GLuint vbo;
+    GLint locProj;
+    GLint locTexture;
+    GLint locColor;
+    GLuint texture;
     GlyphVertex* verts;
 } Text;
 
@@ -46,6 +48,7 @@ void setText(Text* t, char* str);
 void changeText(Text* t, int pos, char* str);
 void setTextColor(Text* t, float r, float g, float b);
 void setFontSize(Text* t, float fontSize);
+void destroyText(Text* t);
 void drawText(Text* t, ColoredTextureShader* shader);
 
 #endif // TEXT_H

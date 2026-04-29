@@ -86,7 +86,6 @@ Menu* createMenu(char* items, float x, float y, float fontSize)
         if(charCnt < maxSize) {
             alignOffsetX = ((maxSize - charCnt) * fontSize) / 2.0f;
         }
-        //m->items[itemCnt]->verts = NULL;
         m->items[itemCnt] = createStaticText(
             item,
             FONT,
@@ -94,6 +93,7 @@ Menu* createMenu(char* items, float x, float y, float fontSize)
             m->x + paddingTextX + alignOffsetX,
             m->y + (itemCnt * rowHeight) + paddingTextY
         );
+        //m->items[itemCnt]->visible = true;
         memset(item, 0, MAX_TEXT);
         itemCnt++;
         charCnt = 0;

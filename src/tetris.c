@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <time.h>
 #include "std.h"
 #include "graphics.h"
@@ -27,9 +28,10 @@ typedef enum {
 } GameState;
 
 typedef struct Game {
-    bool running;// = true;
-    GameState gameState;// = GameState::GameState_InMenu;
-    GameState lastState;// = GameState::GameState_InMenu;
+    bool running;
+    GameState gameState;
+    GameState lastState;
+    Text* labelStatusMessage;
 } Game;
 
 void freeGameObjects(PlayField* field[MAX_PLAYERS], Player* player[MAX_PLAYERS])
@@ -40,7 +42,10 @@ void freeGameObjects(PlayField* field[MAX_PLAYERS], Player* player[MAX_PLAYERS])
             field[i] = NULL;
         }
         if(player[i] != NULL) {
+            destroyText(player[i]->scoreText);
+            destroyText(player[i]->statusText);
             free(player[i]->scoreText);
+            free(player[i]->statusText);
             free(player[i]);
             player[i] = NULL;
         }
@@ -196,11 +201,14 @@ int main(int argc, char** argv)
     Game game;
     game.gameState = game.lastState = GameState_InMenu;
     game.running = true;
+    game.labelStatusMessage = createText("GAME OVER !!!", FONT, 48.0f, wWidth / 2.0f - (7 * 48.0f), 48.0f);
+    setTextColor(game.labelStatusMessage, 1.0f, 0.0f, 0.0f);
+    game.labelStatusMessage->visible = false;
 
     Image* splash_screen = loadImage("assets/splash_screen.jpg");
 
     Menu* menu;
-    menu = createMenu("1 PLAYER GAME|2 PLAYER GAME|EXIT|", wWidth / 2.0f, wHeight / 2.0f, 24.0f); 
+    menu = createMenu("1 PLAYER GAME|2 PLAYER GAME|EXIT|", wWidth / 2.0f, wHeight / 2.0f, 24.0f);
 
     PlayField* field[MAX_PLAYERS];
     Player* player[MAX_PLAYERS];
@@ -211,9 +219,8 @@ int main(int argc, char** argv)
     
     size_t sbFontSize = 22.0f;
     ScoreBoard* scoreBoard = createScoreBoard(wWidth / 2 - (sbFontSize * 12), wHeight / 2 - (sbFontSize * 5), sbFontSize);
-    
-    Text* gameStatusMessage = createText("GAME STARTED !!!", FONT, 48.0f, wWidth / 2.0f, wHeight / 2.0f);
-    setTextColor(gameStatusMessage, 1.0f, 0.0f, 0.0f);
+
+    moveText(game.labelStatusMessage, game.labelStatusMessage->x, scoreBoard->y - 48.0f * 2);
 
     bool keyPress[11] = {0};
     SDL_Event ev;
@@ -239,7 +246,7 @@ int main(int argc, char** argv)
             game.running = false;
         }
         // Hide menu
-        if(menu->action == 0 && game.gameState == GameState_InMenu && game.lastState != GameState_InMenu) {
+        if(menu->action == 0 && game.gameState == GameState_InMenu && game.lastState == GameState_Playing) {
             game.gameState = game.lastState;
             menu->visible = false;
         }
@@ -255,39 +262,34 @@ int main(int argc, char** argv)
             field[0] = createField(1, 0);
             createNewTetrominoes(field[0]);
             player[0] = createPlayer(1);
-            player[0]->scoreText = createText(
-                "Player 1 :     0", FONT,
-                22.0f, field[0]->rx + (FIELD_WIDTH * BLOCK_WIDTH), field[0]->ry + 44.0f
-            );
+            moveText(player[0]->scoreText, field[0]->rx + (FIELD_WIDTH * BLOCK_WIDTH), field[0]->ry + 44.0f);
+            moveText(player[0]->statusText, field[0]->rx, field[0]->ry + (FIELD_HEIGHT * BLOCK_HEIGHT) + 44.0f);
             game.gameState = GameState_Playing;
             menu->visible = false;
             splash_screen->visible = false;
             scoreBoard->visible = true;
-
+            game.labelStatusMessage->visible = false;
         }
-        // Start 1 Player game
+        // Start 2 Player game
         if(menu->action == 2) { // 1 player game
             freeGameObjects(field, player);
             field[1] = createField(1, 0);
             createNewTetrominoes(field[1]);
             player[1] = createPlayer(2);
-            player[1]->scoreText = createText(
-                "Player 2 :     0", FONT,
-                22.0f, field[1]->rx + (FIELD_WIDTH * BLOCK_WIDTH), field[1]->ry + 44.0f
-            );
+            moveText(player[1]->scoreText, field[1]->rx + (FIELD_WIDTH * BLOCK_WIDTH), field[1]->ry + 44.0f);
+            moveText(player[1]->statusText, field[1]->rx, field[1]->ry + (FIELD_HEIGHT * BLOCK_HEIGHT) + 48.0f);
             field[0] = createField((int)(dm->w / BLOCK_WIDTH) - FIELD_WIDTH, 0);
             createNewTetrominoes(field[0]);
             placeTetrominoe(field[0]->wx - 4, FIELD_START_ROW, field[0]->nextPiece);
             player[0] = createPlayer(1);
-            player[0]->scoreText = createText(
-                "Player 1 :     0", FONT,
-                22.0f, field[0]->rx - (22.0f * 22.0f), field[0]->ry + 44.0f
-            );
+            moveText(player[0]->scoreText, field[0]->rx - (FIELD_WIDTH * BLOCK_WIDTH), field[0]->ry + 44.0f);
+            moveText(player[0]->statusText, field[0]->rx, field[0]->ry + (FIELD_HEIGHT * BLOCK_HEIGHT) + 48.0f);
 
             game.gameState = GameState_Playing;
             menu->visible = false;
             splash_screen->visible = false;
             scoreBoard->visible = true;
+            game.labelStatusMessage->visible = false;
         }
         menu->action = -1;
         // Game Actions
@@ -380,8 +382,10 @@ int main(int argc, char** argv)
                     // Check for Game Over
                     if(checkGameOver(field[i])) {
                         field[i]->currentPiece->isAlive = false;
-                        player[i]->playerState = PlayerState_GameOver;
                         addScore(scoreBoard, player[i]->playerScore);
+                        player[i]->playerState = PlayerState_GameOver;
+                        sprintf(player[i]->statusMessage, "%s", "Game Over !!!");
+                        setText(player[i]->statusText, player[i]->statusMessage);
                     }
                     // Get next piece and create new one
                     if(player[i]->playerState != PlayerState_GameOver) {
@@ -390,9 +394,10 @@ int main(int argc, char** argv)
                 }
             }
             if(player[0] != NULL && player[0]->playerState == PlayerState_GameOver
-                && player[1] != NULL && player[1]->playerState == PlayerState_GameOver) {
+                && (player[1] == NULL || (player[1] != NULL && player[1]->playerState == PlayerState_GameOver))) {
                     game.gameState = GameState_Over;
                     game.lastState = GameState_Over;
+                    game.labelStatusMessage->visible = true;
             }
         }
 
@@ -413,9 +418,10 @@ int main(int argc, char** argv)
         cnt = 0;
         while(player[cnt] != NULL && player[cnt]->scoreText != NULL && cnt < MAX_PLAYERS) {
             drawText(player[cnt]->scoreText, coloredTextureShader);
-            cnt++;
+            drawText(player[cnt]->statusText, coloredTextureShader);
+            cnt++;        
         }
-
+        drawText(game.labelStatusMessage, coloredTextureShader);
         drawScoreBoard(scoreBoard, coloredTextureShader);
         drawMenu(menu, gameShader, coloredTextureShader);
 
@@ -429,7 +435,9 @@ int main(int argc, char** argv)
     }
 
     // Free GameObjects
-    freeGameObjects(field, player);   
+    freeGameObjects(field, player);
+    destroyText(game.labelStatusMessage);
+    free(game.labelStatusMessage);
     free(splash_screen);
     free(menu);
     free(scoreBoard);
