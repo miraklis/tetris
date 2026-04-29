@@ -6,6 +6,9 @@
 #include <stddef.h>
 #include <stdbool.h>
 #include <unistd.h>
+#include <math.h>
+#include <time.h>
+
 
 size_t slength(const char* s, size_t maxlen);
 

@@ -1,4 +1,3 @@
-//#include <string.h>
 #include "std.h"
 #include "graphics.h"
 #include "shaders.h"

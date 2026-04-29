@@ -144,25 +144,6 @@ ColoredTextureShader* createColoredTextureShader(void)
     return shader;
 }
 
-/*
-void createProgram(const char* vs, const char* fs, ProgramId id)
-{
-    GLuint program = glCreateProgram();
-
-    GLuint v = compileShader(GL_VERTEX_SHADER, vs);
-    GLuint f = compileShader(GL_FRAGMENT_SHADER, fs);
-
-    glAttachShader(program->shaderProgram, v);
-    glAttachShader(program->shaderProgram, f);
-    glLinkProgram(program->shaderProgram);
-
-    glDeleteShader(v);
-    glDeleteShader(f);
-
-    programsPool[id] = program;
-}
-*/
-
 void useProgram(GLuint program) {
     if(program != currentProgram) {
         currentProgram = program;

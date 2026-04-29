@@ -1,5 +1,4 @@
 #include "std.h"
-#include <stdio.h>
 #include "player.h"
 
 Player* createPlayer(int playerNum)

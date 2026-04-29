@@ -3,8 +3,6 @@
 
 #include "graphics.h"
 
-#define MAX_UNIFORMS 10
-
 extern const char* default_VS;
 extern const char* default_FS;
 extern const char* glow_FS;

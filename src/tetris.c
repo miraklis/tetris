@@ -1,5 +1,3 @@
-#include <stdio.h>
-#include <time.h>
 #include "std.h"
 #include "graphics.h"
 #include "shaders.h"
