@@ -2,10 +2,11 @@
 #include "graphics.h"
 #include "shaders.h"
 #include "text.h"
+#include "fonts.h"
 
-#define STB_TRUETYPE_IMPLEMENTATION
-#include "stb_truetype.h"
-
+// #define STB_TRUETYPE_IMPLEMENTATION
+// #include "stb_truetype.h"
+/*
 static unsigned char* loadTTFFont(const char* fontName)
 {
     FILE* f = fopen(fontName, "rb");
@@ -47,18 +48,20 @@ static GLuint loadTTFTexture(unsigned char bitmap[512*512])
 
     return tex;
 }
+*/
 
-Text* createStaticText(char* str, const char* fontName, float fontSize, float x, float y)
+Text* createStaticText(char* str, char* fontName, float fontSize, float x, float y)
 {
     Text* t = (Text*)malloc(sizeof(Text));
     t->type = TXTTYPE_STATIC;
-    t->font = loadTTFFont(fontName);
-    t->fontSize = fontSize;
     t->x = x;
     t->y = y;
-    unsigned char bitmap[512*512];
-    stbtt_BakeFontBitmap(t->font, 0, t->fontSize, bitmap, 512, 512, 32, 96, t->cdata);
-    t->texture = loadTTFTexture(bitmap);
+    t->font = loadFont(fontName, fontSize);
+    // t->font = loadTTFFont(fontName);
+    // t->fontSize = fontSize;
+    // unsigned char bitmap[512*512];
+    // stbtt_BakeFontBitmap(t->font, 0, t->fontSize, bitmap, 512, 512, 32, 96, t->cdata);
+    // t->texture = loadTTFTexture(bitmap);
     size_t charCount = slength(str, MAX_TEXT);//strnlen(str, MAX_TEXT);
     t->verts = (GlyphVertex*)calloc(sizeof(GlyphVertex), 6 * charCount);
 
@@ -71,7 +74,7 @@ Text* createStaticText(char* str, const char* fontName, float fontSize, float x,
         t->txt[charIt++] = c;
         stbtt_aligned_quad q;
         stbtt_GetBakedQuad(
-            t->cdata, 512, 512, c - 32,
+            t->font->cdata, 512, 512, c - 32,
             &x, &yy, &q, 1);
         t->verts[count++] = (GlyphVertex){q.x0,q.y0,q.s0,q.t0};
         t->verts[count++] = (GlyphVertex){q.x1,q.y0,q.s1,q.t0};
@@ -97,17 +100,18 @@ Text* createStaticText(char* str, const char* fontName, float fontSize, float x,
     return t;
 }
 
-Text* createText(char* str, const char* fontName, float fontSize, float x, float y)
+Text* createText(char* str, char* fontName, float fontSize, float x, float y)
 {
     Text* t = (Text*)malloc(sizeof(Text));
     t->type = TXTTYPE_DYNAMIC;
-    t->font = loadTTFFont(fontName);
-    t->fontSize = fontSize;
     t->x = x;
     t->y = y;
-    unsigned char bitmap[512*512];
-    stbtt_BakeFontBitmap(t->font, 0, t->fontSize, bitmap, 512, 512, 32, 96, t->cdata);
-    t->texture = loadTTFTexture(bitmap);
+    t->font = loadFont(fontName, fontSize);
+    // t->font = loadTTFFont(fontName);
+    // t->fontSize = fontSize;
+    // unsigned char bitmap[512*512];
+    // stbtt_BakeFontBitmap(t->font, 0, t->fontSize, bitmap, 512, 512, 32, 96, t->cdata);
+    // t->texture = loadTTFTexture(bitmap);
     memset(t->txt, 0, MAX_TEXT);
     t->verts = (GlyphVertex*)calloc(sizeof(GlyphVertex), 6 * MAX_TEXT);
 
@@ -120,7 +124,7 @@ Text* createText(char* str, const char* fontName, float fontSize, float x, float
         t->txt[charIt++] = c;
         stbtt_aligned_quad q;
         stbtt_GetBakedQuad(
-            t->cdata, 512, 512, c - 32,
+            t->font->cdata, 512, 512, c - 32,
             &x, &yy, &q, 1);
         t->verts[count++] = (GlyphVertex){q.x0,q.y0,q.s0,q.t0};
         t->verts[count++] = (GlyphVertex){q.x1,q.y0,q.s1,q.t0};
@@ -153,7 +157,7 @@ void setText(Text* t, char* str)
     float x = t->x;
     int count=0;
     int charIt = 0;
-    float yy = t->y + t->fontSize;
+    float yy = t->y + t->font->fontSize;
     memset(t->txt, 0, MAX_TEXT);
     while(*str)
     {
@@ -161,7 +165,7 @@ void setText(Text* t, char* str)
         t->txt[charIt++] = c;
         stbtt_aligned_quad q;
         stbtt_GetBakedQuad(
-            t->cdata, 512, 512, c - 32,
+            t->font->cdata, 512, 512, c - 32,
             &x, &yy, &q, 1);
         t->verts[count++] = (GlyphVertex){q.x0,q.y0,q.s0,q.t0};
         t->verts[count++] = (GlyphVertex){q.x1,q.y0,q.s1,q.t0};
@@ -180,9 +184,9 @@ void changeText(Text* t, int pos, char* str)
     if(t == NULL || t->type == TXTTYPE_STATIC || t->verts == NULL)
         return;
 
-    float x = t->x + (pos * t->fontSize);
+    float x = t->x + (pos * t->font->fontSize);
     float y = t->y;
-    float yy = y + t->fontSize;
+    float yy = y + t->font->fontSize;
     int count=pos * 6;
     int charIt = 0;
     while(*str)
@@ -191,7 +195,7 @@ void changeText(Text* t, int pos, char* str)
         t->txt[charIt++] = c;
         stbtt_aligned_quad q;
         stbtt_GetBakedQuad(
-            t->cdata, 512, 512, c - 32,
+            t->font->cdata, 512, 512, c - 32,
             &x, &yy, &q, 1);
         t->verts[count++] = (GlyphVertex){q.x0,q.y0,q.s0,q.t0};
         t->verts[count++] = (GlyphVertex){q.x1,q.y0,q.s1,q.t0};
@@ -213,7 +217,7 @@ void setTextColor(Text* t, float r, float g, float b)
     t->color.g = g;
     t->color.b = b;
 }
-
+/*
 void setFontSize(Text* t, float fontSize)
 {
     if(t == NULL)
@@ -236,7 +240,7 @@ void setFontSize(Text* t, float fontSize)
         t->txt[charIt++] = c;
         stbtt_aligned_quad q;
         stbtt_GetBakedQuad(
-            t->cdata, 512, 512, c - 32,
+            t->font->cdata, 512, 512, c - 32,
             &x, &yy, &q, 1);
         t->verts[count++] = (GlyphVertex){q.x0,q.y0,q.s0,q.t0};
         t->verts[count++] = (GlyphVertex){q.x1,q.y0,q.s1,q.t0};
@@ -249,6 +253,7 @@ void setFontSize(Text* t, float fontSize)
     glBindBuffer(GL_ARRAY_BUFFER,t->vbo);
     glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(GlyphVertex)*t->vertsCount, t->verts);    
 }
+*/
 
 void moveText(Text* t, float x, float y)
 {
@@ -256,7 +261,7 @@ void moveText(Text* t, float x, float y)
     int charIt = 0;
     t->x = x;
     t->y = y;
-    float yy = y + t->fontSize;
+    float yy = y + t->font->fontSize;
     char* str = &t->txt[0];
     while(*str)
     {
@@ -264,7 +269,7 @@ void moveText(Text* t, float x, float y)
         t->txt[charIt++] = c;
         stbtt_aligned_quad q;
         stbtt_GetBakedQuad(
-            t->cdata, 512, 512, c - 32,
+            t->font->cdata, 512, 512, c - 32,
             &x, &yy, &q, 1);
         t->verts[count++] = (GlyphVertex){q.x0,q.y0,q.s0,q.t0};
         t->verts[count++] = (GlyphVertex){q.x1,q.y0,q.s1,q.t0};
@@ -282,10 +287,10 @@ void destroyText(Text* t)
 {
     if(t == NULL)
         return;
-    glDeleteTextures(1, &t->texture);
+    //glDeleteTextures(1, &t->texture);
     glDeleteBuffers(1, &t->vbo);
     glDeleteVertexArrays(1, &t->vao);
-    free(t->font);
+    //free(t->font);
     free(t->verts);
     free(t);
     t = NULL;
@@ -301,7 +306,7 @@ void drawText(Text* t, ColoredTextureShader* shader)
     glUniformMatrix4fv(shader->locProj, 1, GL_FALSE, t->proj);
     glUniform3f(shader->locColor, t->color.r, t->color.g, t->color.b);
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, t->texture);
+    glBindTexture(GL_TEXTURE_2D, t->font->texture);
     glUniform1i(shader->locTexture, 0);
     glDrawArrays(GL_TRIANGLES, 0, t->vertsCount);
 }

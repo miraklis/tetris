@@ -3,7 +3,8 @@
 
 #include "graphics.h"
 #include "shaders.h"
-#include "stb_truetype.h"
+#include "fonts.h"
+//#include "stb_truetype.h"
 
 #define MAX_TEXT 256
 
@@ -25,9 +26,10 @@ typedef struct Text {
     Color color;
     size_t vertsCount;
     float x , y;
-    float fontSize;
-    stbtt_bakedchar cdata[96];
-    unsigned char* font;
+    Font* font;
+//    float fontSize;
+//    stbtt_bakedchar cdata[96];
+//    unsigned char* font;
     char txt[MAX_TEXT];
 
     GLuint vao;
@@ -35,19 +37,17 @@ typedef struct Text {
     GLint locProj;
     GLint locTexture;
     GLint locColor;
-    GLuint texture;
+//    GLuint texture;
     GlyphVertex* verts;
 } Text;
 
-// void initStaticText(Text* t, char* str, const char* fontName, float fontSize, float x, float y);
-// void initText(Text* t, char* str, const char* fontName, float fontSize, float x, float y);
-Text* createStaticText(char* str, const char* fontName, float fontSize, float x, float y);
-Text* createText(char* str, const char* fontName, float fontSize, float x, float y);
+Text* createStaticText(char* str, char* fontName, float fontSize, float x, float y);
+Text* createText(char* str, char* fontName, float fontSize, float x, float y);
 void moveText(Text* t, float x, float y);
 void setText(Text* t, char* str);
 void changeText(Text* t, int pos, char* str);
 void setTextColor(Text* t, float r, float g, float b);
-void setFontSize(Text* t, float fontSize);
+//void setFontSize(Text* t, float fontSize);
 void destroyText(Text* t);
 void drawText(Text* t, ColoredTextureShader* shader);
 
