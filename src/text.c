@@ -48,7 +48,6 @@ static GLuint loadTTFTexture(unsigned char bitmap[512*512])
     return tex;
 }
 
-//void initStaticText(Text* t, char* str, const char* fontName, float fontSize, float x, float y)
 Text* createStaticText(char* str, const char* fontName, float fontSize, float x, float y)
 {
     Text* t = (Text*)malloc(sizeof(Text));
@@ -60,10 +59,8 @@ Text* createStaticText(char* str, const char* fontName, float fontSize, float x,
     unsigned char bitmap[512*512];
     stbtt_BakeFontBitmap(t->font, 0, t->fontSize, bitmap, 512, 512, 32, 96, t->cdata);
     t->texture = loadTTFTexture(bitmap);
-    //free(t->verts);
-    //t->verts = NULL;
     size_t charCount = slength(str, MAX_TEXT);//strnlen(str, MAX_TEXT);
-    t->verts = (GlyphVertex*)malloc(sizeof(GlyphVertex) * 6 * charCount);
+    t->verts = (GlyphVertex*)calloc(sizeof(GlyphVertex), 6 * charCount);
 
     int count=0;
     int charIt = 0;
@@ -100,7 +97,6 @@ Text* createStaticText(char* str, const char* fontName, float fontSize, float x,
     return t;
 }
 
-//void initText(Text* t, char* str, const char* fontName, float fontSize, float x, float y)
 Text* createText(char* str, const char* fontName, float fontSize, float x, float y)
 {
     Text* t = (Text*)malloc(sizeof(Text));
@@ -112,7 +108,8 @@ Text* createText(char* str, const char* fontName, float fontSize, float x, float
     unsigned char bitmap[512*512];
     stbtt_BakeFontBitmap(t->font, 0, t->fontSize, bitmap, 512, 512, 32, 96, t->cdata);
     t->texture = loadTTFTexture(bitmap);
-    t->verts = (GlyphVertex*)malloc(sizeof(GlyphVertex) * 6 * MAX_TEXT);
+    memset(t->txt, 0, MAX_TEXT);
+    t->verts = (GlyphVertex*)calloc(sizeof(GlyphVertex), 6 * MAX_TEXT);
 
     int count=0;
     int charIt = 0;
@@ -157,6 +154,7 @@ void setText(Text* t, char* str)
     int count=0;
     int charIt = 0;
     float yy = t->y + t->fontSize;
+    memset(t->txt, 0, MAX_TEXT);
     while(*str)
     {
         unsigned char c = *str++;

@@ -42,8 +42,6 @@ void freeGameObjects(PlayField* field[MAX_PLAYERS], Player* player[MAX_PLAYERS])
         if(player[i] != NULL) {
             destroyText(player[i]->scoreText);
             destroyText(player[i]->statusText);
-            free(player[i]->scoreText);
-            free(player[i]->statusText);
             free(player[i]);
             player[i] = NULL;
         }
@@ -199,14 +197,14 @@ int main(int argc, char** argv)
     Game game;
     game.gameState = game.lastState = GameState_InMenu;
     game.running = true;
-    game.labelStatusMessage = createText("GAME OVER !!!", FONT, 48.0f, wWidth / 2.0f - (7 * 48.0f), 48.0f);
+    game.labelStatusMessage = createText("GAME OVER !!!", FONT, 48.0f, wWidth / 2.0f - (6 * 48.0f), 48.0f);
     setTextColor(game.labelStatusMessage, 1.0f, 0.0f, 0.0f);
     game.labelStatusMessage->visible = false;
 
     Image* splash_screen = loadImage("assets/splash_screen.jpg");
 
     Menu* menu;
-    menu = createMenu("1 PLAYER GAME|2 PLAYER GAME|EXIT|", wWidth / 2.0f, wHeight / 2.0f, 24.0f);
+    menu = createMenu("1 PLAYER GAME|2 PLAYER GAME|EXIT|", wWidth / 2.0f, wHeight / 5.0f, 24.0f);
 
     PlayField* field[MAX_PLAYERS];
     Player* player[MAX_PLAYERS];
@@ -216,7 +214,7 @@ int main(int argc, char** argv)
     }
     
     size_t sbFontSize = 22.0f;
-    ScoreBoard* scoreBoard = createScoreBoard(wWidth / 2 - (sbFontSize * 12), wHeight / 2 - (sbFontSize * 5), sbFontSize);
+    ScoreBoard* scoreBoard = createScoreBoard(wWidth / 2 - (sbFontSize * 9), wHeight / 2 - (sbFontSize * 5), sbFontSize);
 
     moveText(game.labelStatusMessage, game.labelStatusMessage->x, scoreBoard->y - 48.0f * 2);
 
@@ -267,6 +265,7 @@ int main(int argc, char** argv)
             splash_screen->visible = false;
             scoreBoard->visible = true;
             game.labelStatusMessage->visible = false;
+            printf("status = %s", player[0]->statusMessage);
         }
         // Start 2 Player game
         if(menu->action == 2) { // 1 player game
@@ -275,13 +274,13 @@ int main(int argc, char** argv)
             createNewTetrominoes(field[1]);
             player[1] = createPlayer(2);
             moveText(player[1]->scoreText, field[1]->rx + (FIELD_WIDTH * BLOCK_WIDTH), field[1]->ry + 44.0f);
-            moveText(player[1]->statusText, field[1]->rx, field[1]->ry + (FIELD_HEIGHT * BLOCK_HEIGHT) + 48.0f);
+            moveText(player[1]->statusText, field[1]->rx, field[1]->ry + (FIELD_HEIGHT * BLOCK_HEIGHT) + 44.0f);
             field[0] = createField((int)(dm->w / BLOCK_WIDTH) - FIELD_WIDTH, 0);
             createNewTetrominoes(field[0]);
             placeTetrominoe(field[0]->wx - 4, FIELD_START_ROW, field[0]->nextPiece);
             player[0] = createPlayer(1);
             moveText(player[0]->scoreText, field[0]->rx - (FIELD_WIDTH * BLOCK_WIDTH), field[0]->ry + 44.0f);
-            moveText(player[0]->statusText, field[0]->rx, field[0]->ry + (FIELD_HEIGHT * BLOCK_HEIGHT) + 48.0f);
+            moveText(player[0]->statusText, field[0]->rx, field[0]->ry + (FIELD_HEIGHT * BLOCK_HEIGHT) + 44.0f);
 
             game.gameState = GameState_Playing;
             menu->visible = false;
@@ -435,7 +434,6 @@ int main(int argc, char** argv)
     // Free GameObjects
     freeGameObjects(field, player);
     destroyText(game.labelStatusMessage);
-    free(game.labelStatusMessage);
     free(splash_screen);
     free(menu);
     free(scoreBoard);
