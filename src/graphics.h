@@ -4,6 +4,8 @@
 #include <GLES3/gl3.h>
 #include <SDL3/SDL.h>
 
+#define QUAD_VERTICES 6
+
 #define BLOCK_WIDTH 34
 #define BLOCK_HEIGHT 34
 #define FIELD_WIDTH 12

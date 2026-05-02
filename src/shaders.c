@@ -43,10 +43,11 @@ const char* texture_VS =
 "layout(location=0) in vec2 position;\n"
 "layout(location=1) in vec2 uv;\n"
 "uniform mat4 proj;\n"
+"uniform mat4 model;\n"
 "out vec2 vUV;\n"
 "void main()\n"
 "{\n"
-"    gl_Position = proj * vec4(position, 0.0, 1.0);\n"
+"    gl_Position = proj * model * vec4(position, 0.0, 1.0);\n"
 "    vUV = uv;\n"
 "}";
 
@@ -117,6 +118,7 @@ TextureShader* createTextureShader(void)
     glDeleteShader(f);
 
     shader->locProj = glGetUniformLocation(shader->program, "proj");
+    shader->locModel = glGetUniformLocation(shader->program, "model");
     shader->locTexture = glGetUniformLocation(shader->program, "samplerTexture");
 
     return shader;
@@ -138,6 +140,7 @@ ColoredTextureShader* createColoredTextureShader(void)
     glDeleteShader(f);
 
     shader->locProj = glGetUniformLocation(shader->program, "proj");
+    shader->locModel = glGetUniformLocation(shader->program, "model");
     shader->locColor = glGetUniformLocation(shader->program, "color");
     shader->locTexture = glGetUniformLocation(shader->program, "samplerTexture");
 

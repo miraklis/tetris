@@ -67,7 +67,9 @@ Text* createStaticText(char* str, char* fontName, float fontSize, float x, float
 
     int count=0;
     int charIt = 0;
-    float yy = y + fontSize;
+    float xx = 0.0f;
+    float yy = fontSize;
+    // float yy = y + fontSize;
     while(*str)
     {
         unsigned char c = *str++;
@@ -75,7 +77,7 @@ Text* createStaticText(char* str, char* fontName, float fontSize, float x, float
         stbtt_aligned_quad q;
         stbtt_GetBakedQuad(
             t->font->cdata, 512, 512, c - 32,
-            &x, &yy, &q, 1);
+            &xx, &yy, &q, 1);
         t->verts[count++] = (GlyphVertex){q.x0,q.y0,q.s0,q.t0};
         t->verts[count++] = (GlyphVertex){q.x1,q.y0,q.s1,q.t0};
         t->verts[count++] = (GlyphVertex){q.x0,q.y1,q.s0,q.t1};
@@ -95,6 +97,7 @@ Text* createStaticText(char* str, char* fontName, float fontSize, float x, float
     glVertexAttribPointer(1,2,GL_FLOAT,GL_FALSE,sizeof(GlyphVertex),(void*)(2*sizeof(float)));
     glEnableVertexAttribArray(1);
     orthoMatrix(0, 1920, 1080, 0, -1, 1, t->proj);
+    translateMatrix(x, y, t->model);
     t->color = (Color){1.0f, 1.0f, 1.0f, 1.0f};
     t->visible = true;
     return t;
@@ -107,17 +110,14 @@ Text* createText(char* str, char* fontName, float fontSize, float x, float y)
     t->x = x;
     t->y = y;
     t->font = loadFont(fontName, fontSize);
-    // t->font = loadTTFFont(fontName);
-    // t->fontSize = fontSize;
-    // unsigned char bitmap[512*512];
-    // stbtt_BakeFontBitmap(t->font, 0, t->fontSize, bitmap, 512, 512, 32, 96, t->cdata);
-    // t->texture = loadTTFTexture(bitmap);
     memset(t->txt, 0, MAX_TEXT);
     t->verts = (GlyphVertex*)calloc(sizeof(GlyphVertex), 6 * MAX_TEXT);
 
     int count=0;
     int charIt = 0;
-    float yy = y + fontSize;
+    float xx = 0.0f;
+    float yy = fontSize;
+    // float yy = y + fontSize;
     while(*str)
     {
         unsigned char c = *str++;
@@ -125,7 +125,7 @@ Text* createText(char* str, char* fontName, float fontSize, float x, float y)
         stbtt_aligned_quad q;
         stbtt_GetBakedQuad(
             t->font->cdata, 512, 512, c - 32,
-            &x, &yy, &q, 1);
+            &xx, &yy, &q, 1);
         t->verts[count++] = (GlyphVertex){q.x0,q.y0,q.s0,q.t0};
         t->verts[count++] = (GlyphVertex){q.x1,q.y0,q.s1,q.t0};
         t->verts[count++] = (GlyphVertex){q.x0,q.y1,q.s0,q.t1};
@@ -144,6 +144,7 @@ Text* createText(char* str, char* fontName, float fontSize, float x, float y)
     glVertexAttribPointer(1,2,GL_FLOAT,GL_FALSE,sizeof(GlyphVertex),(void*)(2*sizeof(float)));
     glEnableVertexAttribArray(1);
     orthoMatrix(0, dm->w, dm->h, 0, -1, 1, t->proj);
+    translateMatrix(x, y, t->model);
     t->color = (Color){1.0f, 1.0f, 1.0f, 1.0f};
     t->visible = true;
     return t;
@@ -154,10 +155,12 @@ void setText(Text* t, char* str)
     if(t == NULL || t->type == TXTTYPE_STATIC || t->verts == NULL)
         return;
 
-    float x = t->x;
     int count=0;
     int charIt = 0;
-    float yy = t->y + t->font->fontSize;
+    // float x = t->x;
+    // float yy = t->y + t->font->fontSize;
+    float xx = 0.0f;
+    float yy = t->font->fontSize;
     memset(t->txt, 0, MAX_TEXT);
     while(*str)
     {
@@ -166,7 +169,7 @@ void setText(Text* t, char* str)
         stbtt_aligned_quad q;
         stbtt_GetBakedQuad(
             t->font->cdata, 512, 512, c - 32,
-            &x, &yy, &q, 1);
+            &xx, &yy, &q, 1);
         t->verts[count++] = (GlyphVertex){q.x0,q.y0,q.s0,q.t0};
         t->verts[count++] = (GlyphVertex){q.x1,q.y0,q.s1,q.t0};
         t->verts[count++] = (GlyphVertex){q.x0,q.y1,q.s0,q.t1};
@@ -184,9 +187,11 @@ void changeText(Text* t, int pos, char* str)
     if(t == NULL || t->type == TXTTYPE_STATIC || t->verts == NULL)
         return;
 
-    float x = t->x + (pos * t->font->fontSize);
-    float y = t->y;
-    float yy = y + t->font->fontSize;
+    // float x = t->x + (pos * t->font->fontSize);
+    // float y = t->y;
+    // float yy = y + t->font->fontSize;
+    float xx = (pos * t->font->fontSize);
+    float yy = t->font->fontSize;
     int count=pos * 6;
     int charIt = 0;
     while(*str)
@@ -196,7 +201,7 @@ void changeText(Text* t, int pos, char* str)
         stbtt_aligned_quad q;
         stbtt_GetBakedQuad(
             t->font->cdata, 512, 512, c - 32,
-            &x, &yy, &q, 1);
+            &xx, &yy, &q, 1);
         t->verts[count++] = (GlyphVertex){q.x0,q.y0,q.s0,q.t0};
         t->verts[count++] = (GlyphVertex){q.x1,q.y0,q.s1,q.t0};
         t->verts[count++] = (GlyphVertex){q.x0,q.y1,q.s0,q.t1};
@@ -257,6 +262,11 @@ void setFontSize(Text* t, float fontSize)
 
 void moveText(Text* t, float x, float y)
 {
+
+    t->x = x;
+    t->y = y;
+    translateMatrix(x, y, t->model);
+/*
     int count=0;
     int charIt = 0;
     t->x = x;
@@ -281,6 +291,7 @@ void moveText(Text* t, float x, float y)
     t->vertsCount = count;
     glBindBuffer(GL_ARRAY_BUFFER,t->vbo);
     glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(GlyphVertex)*t->vertsCount, t->verts);
+*/    
 }
 
 void destroyText(Text* t)
@@ -304,6 +315,7 @@ void drawText(Text* t, ColoredTextureShader* shader)
     useProgram(shader->program);
     glBindVertexArray(t->vao);
     glUniformMatrix4fv(shader->locProj, 1, GL_FALSE, t->proj);
+    glUniformMatrix4fv(shader->locModel, 1, GL_FALSE, t->model);
     glUniform3f(shader->locColor, t->color.r, t->color.g, t->color.b);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, t->font->texture);

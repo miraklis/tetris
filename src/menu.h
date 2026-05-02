@@ -5,7 +5,7 @@
 #include "shaders.h"
 #include "text.h"
 
-#define MENU_VERTICES_COUNT 12
+//#define MENU_VERTICES_COUNT 12
 
 typedef struct {
     float x, y;
@@ -15,13 +15,18 @@ typedef struct {
     int action;
     bool visible;
     size_t itemsCnt;
-    Vertex vertices[12];
+    //Vertex vertices[12];
+    Vertex backgroundVertices[6];
+    Vertex barVertices[6];
     Text** items;
 
-    GLuint vao;
-    GLuint vbo;
+    GLuint backVao;
+    GLuint barVao;
+    // GLuint backVbo;
+    // GLuint barVbo;
     float proj[16];
-    float model[16];
+    float menuModel[16];
+    float barModel[16];
 } Menu;
 
 Menu* createMenu(char* items, float x, float y, float fontSize);

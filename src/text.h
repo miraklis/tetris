@@ -23,13 +23,11 @@ typedef struct Text {
     enum TextType type;
     bool visible;
     float proj[16];
+    float model[16];
     Color color;
     size_t vertsCount;
     float x , y;
     Font* font;
-//    float fontSize;
-//    stbtt_bakedchar cdata[96];
-//    unsigned char* font;
     char txt[MAX_TEXT];
 
     GLuint vao;
@@ -37,7 +35,6 @@ typedef struct Text {
     GLint locProj;
     GLint locTexture;
     GLint locColor;
-//    GLuint texture;
     GlyphVertex* verts;
 } Text;
 

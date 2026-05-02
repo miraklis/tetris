@@ -9,10 +9,9 @@
 Image* loadImage(char* path)
 {
     Image* image = (Image*)malloc(sizeof(Image));
-
     image->data = stbi_load("assets/splash_screen.jpg", &image->width, &image->height, &image->channels, 0);
     if (!image->data) {
-        const char* error = stbi_failure_reason(); // Use to get specific error message
+        const char* error = stbi_failure_reason();
         printf("Failed to load image: %s\n", error);
         free(image);
         return NULL;
@@ -29,15 +28,19 @@ Image* loadImage(char* path)
     glTexImage2D(GL_TEXTURE_2D, 0, format, image->width, image->height, 0, format, GL_UNSIGNED_BYTE, image->data);
     glGenerateMipmap(GL_TEXTURE_2D);
 
-    const float iw = dm->w;
-    const float ih = dm->h;
+    image->x = 0.0f;
+    image->y = 0.0f;
+    const float x = image->x;
+    const float y = image->y;
+    const float w = dm->w;
+    const float h = dm->h;
 
     float vertices[] = {
         // Positions (x, y, z)      // Texture coords (u, v)
-        iw,     0.0f,   0.0f,       1.0f,   1.0f,   // Top Right
-        iw,     ih,     0.0f,       1.0f,   0.0f,   // Bottom Right
-        0.0f,   ih,     0.0f,       0.0f,   0.0f,   // Bottom Left
-        0.0f,   0.0f,   0.0f,       0.0f,   1.0f    // Top Left 
+        w,      y,      0.0f,       1.0f,   1.0f,   // Top Right
+        w,      h,      0.0f,       1.0f,   0.0f,   // Bottom Right
+        x,      h,      0.0f,       0.0f,   0.0f,   // Bottom Left
+        x,      y,      0.0f,       0.0f,   1.0f    // Top Left 
     };
     unsigned int indices[] = { 0, 1, 3, 1, 2, 3 }; // Two triangles to form a quad
     
@@ -55,9 +58,17 @@ Image* loadImage(char* path)
     glEnableVertexAttribArray(1);
 
     orthoMatrix(0, dm->w, dm->h, 0, -1, 1, image->proj);
+    translateMatrix(image->x, image->y, image->model);
     image->visible = true;
 
     return image;
+}
+
+void moveImage(Image* img, float x, float y)
+{
+    img->x = x;
+    img->y = y;
+    translateMatrix(x, y, img->model);
 }
 
 void drawImage(Image* img, TextureShader* shader)
@@ -68,6 +79,7 @@ void drawImage(Image* img, TextureShader* shader)
     useProgram(shader->program);
     glBindVertexArray(img->vao);
     glUniformMatrix4fv(shader->locProj, 1, GL_FALSE, img->proj);
+    glUniformMatrix4fv(shader->locModel, 1, GL_FALSE, img->model);
     glBindTexture(GL_TEXTURE_2D, img->textureID); 
     glActiveTexture(GL_TEXTURE0);
     glUniform1i(shader->locTexture, 0);

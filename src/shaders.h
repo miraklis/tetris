@@ -18,12 +18,14 @@ typedef struct sGameShader {
 typedef struct sTextureShader {
     GLuint program;
     GLint locProj;
+    GLint locModel;
     GLint locTexture;
 } TextureShader;
 
 typedef struct sColoredTextureShader {
     GLuint program;
     GLint locProj;
+    GLint locModel;
     GLint locColor;
     GLint locTexture;
 } ColoredTextureShader;

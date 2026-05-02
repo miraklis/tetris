@@ -8,21 +8,10 @@ void selectItem(Menu* menu, int itemIndex)
 {
     if(itemIndex < 0 || itemIndex >= menu->itemsCnt)
         return;
+
     menu->selectedIndex = itemIndex;
-
-    const float mx = menu->x;
-    const float menuWidth = menu->w;
-    const float rowHeight = menu->h / menu->itemsCnt;    
     float selectedItemY = menu->y + menu->selectedIndex * menu->fontSize * 2.0f;
-    menu->vertices[6]  = (Vertex){mx, selectedItemY, 0.3f, 0.3f, 0.3f, 1.0f};
-    menu->vertices[7]  = (Vertex){mx, selectedItemY + rowHeight, 0.3f, 0.3f, 0.3f, 1.0f};
-    menu->vertices[8]  = (Vertex){mx + menuWidth, selectedItemY + rowHeight, 0.3f, 0.3f, 0.3f, 1.0f};
-    menu->vertices[9]  = (Vertex){mx + menuWidth, selectedItemY + rowHeight, 0.3f, 0.3f, 0.3f, 1.0f};
-    menu->vertices[10] = (Vertex){ mx + menuWidth, selectedItemY, 0.3f, 0.3f, 0.3f, 1.0f};
-    menu->vertices[11] = (Vertex){ mx, selectedItemY, 0.3f, 0.3f, 0.3f, 1.0f};
-    glBindBuffer(GL_ARRAY_BUFFER, menu->vbo);
-    glBufferSubData(GL_ARRAY_BUFFER, sizeof(Vertex) * 6, sizeof(Vertex) * 6, &menu->vertices[6]);
-
+    translateMatrix(menu->x, selectedItemY, menu->barModel);
 }
 
 Menu* createMenu(char* items, float x, float y, float fontSize)
@@ -92,48 +81,62 @@ Menu* createMenu(char* items, float x, float y, float fontSize)
             m->x + paddingTextX + alignOffsetX,
             m->y + (itemCnt * rowHeight) + paddingTextY
         );
-        //m->items[itemCnt]->visible = true;
         memset(item, 0, MAX_TEXT);
         itemCnt++;
         charCnt = 0;
         it++;
     }
     
-    const float mx = m->x;
-    const float my = m->y;
+    const float mx = 0.0f;
+    const float my = 0.0f;
     const float menuWidth = m->w;
     const float menuHeight = m->h;
 
     // Menu Background
-    m->vertices[0] = (Vertex){mx, my, 0.0f, 0.0f, 1.0f, 1.0f};
-    m->vertices[1] = (Vertex){mx, my + menuHeight, 0.0f, 0.0f, 1.0f, 1.0f};
-    m->vertices[2] = (Vertex){mx + menuWidth, my + menuHeight, 1.0f, 0.0f, 0.0f, 1.0f};
-    m->vertices[3] = (Vertex){mx + menuWidth, my + menuHeight, 1.0f, 0.0f, 0.0f, 1.0f};
-    m->vertices[4] = (Vertex){mx + menuWidth, my, 1.0f, 0.0f, 0.0f, 1.0f};
-    m->vertices[5] = (Vertex){mx, my, 0.0f, 0.0f, 1.0f, 1.0f};
+    m->backgroundVertices[0] = (Vertex){mx, my, 0.0f, 0.0f, 1.0f, 1.0f};
+    m->backgroundVertices[1] = (Vertex){mx, my + menuHeight, 0.0f, 0.0f, 1.0f, 1.0f};
+    m->backgroundVertices[2] = (Vertex){mx + menuWidth, my + menuHeight, 1.0f, 0.0f, 0.0f, 1.0f};
+    m->backgroundVertices[3] = (Vertex){mx + menuWidth, my + menuHeight, 1.0f, 0.0f, 0.0f, 1.0f};
+    m->backgroundVertices[4] = (Vertex){mx + menuWidth, my, 1.0f, 0.0f, 0.0f, 1.0f};
+    m->backgroundVertices[5] = (Vertex){mx, my, 0.0f, 0.0f, 1.0f, 1.0f};
 
     // Menu Selected Item
-    float selectedItemY = my + (m->selectedIndex * rowHeight);
-    m->vertices[6]  = (Vertex){mx, selectedItemY, 0.3f, 0.3f, 0.3f, 1.0f};
-    m->vertices[7]  = (Vertex){mx, selectedItemY + rowHeight, 0.3f, 0.3f, 0.3f, 1.0f};
-    m->vertices[8]  = (Vertex){mx + menuWidth, selectedItemY + rowHeight, 0.3f, 0.3f, 0.3f, 1.0f};
-    m->vertices[9]  = (Vertex){mx + menuWidth, selectedItemY + rowHeight, 0.3f, 0.3f, 0.3f, 1.0f};
-    m->vertices[10] = (Vertex){ mx + menuWidth, selectedItemY, 0.3f, 0.3f, 0.3f, 1.0f};
-    m->vertices[11] = (Vertex){ mx, selectedItemY, 0.3f, 0.3f, 0.3f, 1.0f};
+    float selectedItemY = my;// + (m->selectedIndex * rowHeight);
+    m->barVertices[0] = (Vertex){mx, selectedItemY, 0.3f, 0.3f, 0.3f, 1.0f};
+    m->barVertices[1] = (Vertex){mx, selectedItemY + rowHeight, 0.3f, 0.3f, 0.3f, 1.0f};
+    m->barVertices[2] = (Vertex){mx + menuWidth, selectedItemY + rowHeight, 0.3f, 0.3f, 0.3f, 1.0f};
+    m->barVertices[3] = (Vertex){mx + menuWidth, selectedItemY + rowHeight, 0.3f, 0.3f, 0.3f, 1.0f};
+    m->barVertices[4] = (Vertex){ mx + menuWidth, selectedItemY, 0.3f, 0.3f, 0.3f, 1.0f};
+    m->barVertices[5] = (Vertex){ mx, selectedItemY, 0.3f, 0.3f, 0.3f, 1.0f};
 
-    glGenVertexArrays(1, &m->vao);
-    glGenBuffers(1, &m->vbo);
-    glBindVertexArray(m->vao);
-    glBindBuffer(GL_ARRAY_BUFFER, m->vbo);
+    GLuint vbo;
+
+    // Background VAO and VBO
+    glGenVertexArrays(1, &m->backVao);
+    glGenBuffers(1, &vbo);
+    glBindVertexArray(m->backVao);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(2*sizeof(float)));
     glEnableVertexAttribArray(1);
-    glBindBuffer(GL_ARRAY_BUFFER, m->vbo);
-    glBufferData(GL_ARRAY_BUFFER, MENU_VERTICES_COUNT * sizeof(Vertex), m->vertices, GL_DYNAMIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * 6, m->backgroundVertices, GL_DYNAMIC_DRAW);
 
+    // Bar VAO and VBO
+    glGenVertexArrays(1, &m->barVao);
+    glGenBuffers(1, &vbo);
+    glBindVertexArray(m->barVao);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(2*sizeof(float)));
+    glEnableVertexAttribArray(1);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * 6, m->barVertices, GL_DYNAMIC_DRAW);
+
+    // Projection and Model matrices
     orthoMatrix(0, dm->w, dm->h, 0, -1, 1, m->proj);
-    translateMatrix(0.0f, 0.0f, m->model);
+    translateMatrix(m->x, m->y, m->menuModel);
+    translateMatrix(m->x, m->y, m->barModel);
 
     return m;
 }
@@ -164,16 +167,22 @@ void handleMenuInput(const bool* currentKeyStates, Menu* menu)
     memcpy(previousMenuKeyStates, currentKeyStates, SDL_SCANCODE_COUNT);    
 }
 
-void drawMenu(Menu* menu, GameShader* gameShader, ColoredTextureShader* uiShader)//GLuint program)
+void drawMenu(Menu* menu, GameShader* gameShader, ColoredTextureShader* uiShader)
 {
     if(menu == NULL || !menu->visible)
         return;
 
     useProgram(gameShader->program);
     glUniformMatrix4fv(gameShader->locProj, 1, GL_FALSE, menu->proj);
-    glUniformMatrix4fv(gameShader->locModel, 1, GL_FALSE, menu->model);
-    glBindVertexArray(menu->vao);
-    glDrawArrays(GL_TRIANGLES, 0, MENU_VERTICES_COUNT);
+
+    // Draw background
+    glUniformMatrix4fv(gameShader->locModel, 1, GL_FALSE, menu->menuModel);
+    glBindVertexArray(menu->backVao);
+    glDrawArrays(GL_TRIANGLES, 0, QUAD_VERTICES);
+    // Draw selected item bar
+    glUniformMatrix4fv(gameShader->locModel, 1, GL_FALSE, menu->barModel);
+    glBindVertexArray(menu->barVao);
+    glDrawArrays(GL_TRIANGLES, 0, QUAD_VERTICES);
 
     for(int i = 0; i < menu->itemsCnt; i++) {
         drawText(menu->items[i], uiShader);
