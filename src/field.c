@@ -18,98 +18,29 @@ static void updateField(PlayField* f, bool upload)
     size_t totalChars = strlen(f->fieldLayout);
     
     while(strParser < totalChars) {
-        Color wc = {0.1f, 0.1f, 0.1f, 1.0f};
-        Color vertColor = {0.6f, 0.6f, 0.6f, 1.0f};
-
+        Color borderColor = colorGray60;
+        Color vertColor = f->fieldLayout[strParser] == '.' ? colorBlack : 
+                        (f->fieldLayout[strParser] == '#' ? colorGray20 : 
+                        (f->fieldLayout[strParser] == '=' ? colorWhite :
+                        (f->fieldLayout[strParser] == '0' ? colorRed :
+                        (f->fieldLayout[strParser] == '1' ? colorBlue :
+                        (f->fieldLayout[strParser] == '2' ? colorGreen :
+                        (f->fieldLayout[strParser] == '3' ? colorYellow :
+                        (f->fieldLayout[strParser] == '4' ? colorPink :
+                        (f->fieldLayout[strParser] == '5' ? colorCyan :
+                        (f->fieldLayout[strParser] == '6' ? colorPurple : colorBlack)))))))));
+        float borderThickness = 1.0f;
         if(f->fieldLayout[strParser]=='.') {
-            vertColor.r = 0.0f;
-            vertColor.g = 0.0f;
-            vertColor.b = 0.0f;
+            borderThickness = 0.5f;
+            borderColor = colorGray10;
         }
-        if(f->fieldLayout[strParser]=='#') {
-            wc.r = 0.6f;
-            wc.g = 0.6f;
-            wc.b = 0.6f;
-            vertColor.r = 0.2f;
-            vertColor.g = 0.2f;
-            vertColor.b = 0.2f;
-        }
-        if(f->fieldLayout[strParser]!='.' && f->fieldLayout[strParser]!='#') {
-            wc.r = 0.6f;
-            wc.g = 0.6f;
-            wc.b = 0.6f;
-            char c = f->fieldLayout[strParser];
-            switch(c) {
-                case '0':
-                    vertColor.r = 1.0f;
-                    vertColor.g = 0.0f;
-                    vertColor.b = 0.0f;
-                    break;
-                case '1':
-                    vertColor.r = 0.0f;
-                    vertColor.g = 0.0f;
-                    vertColor.b = 1.0f;
-                    break;
-                case '2':
-                    vertColor.r = 0.0f;
-                    vertColor.g = 1.0f;
-                    vertColor.b = 0.0f;
-                    break;
-                case '3':
-                    vertColor.r = 1.0f;
-                    vertColor.g = 1.0f;
-                    vertColor.b = 0.0f;
-                    break;
-                case '4':
-                    vertColor.r = 0.8f;
-                    vertColor.g = 0.2f;
-                    vertColor.b = 0.5f;
-                    break;
-                case '5':
-                    vertColor.r = 0.0f;
-                    vertColor.g = 1.0f;
-                    vertColor.b = 1.0f;
-                    break;
-                case '6':
-                    vertColor.r = 0.3f;
-                    vertColor.g = 0.2f;
-                    vertColor.b = 0.9f;
-                    break;
-                case '=':
-                    vertColor.r = 1.0f;
-                    vertColor.g = 1.0f;
-                    vertColor.b = 1.0f;
-                    break;
-                default:
-                    vertColor.r = 0.5f;
-                    vertColor.g = 0.5f;
-                    vertColor.b = 0.5f;
-                    break;
-            }
-        }
-
-        // Background
-        float bw = BLOCK_WIDTH;
-        float bh = BLOCK_HEIGHT;
-        float bx = ((int)(strParser % FIELD_WIDTH) * bw);
-        float by = ((int)(strParser / FIELD_WIDTH) * bh);
-        // Background block (used as border of the block)
-        f->vertices[cnt++] = (Vertex){bx, by, wc.r, wc.g, wc.b, wc.a};
-        f->vertices[cnt++] = (Vertex){bx + bw, by, wc.r, wc.g, wc.b, wc.a};
-        f->vertices[cnt++] = (Vertex){bx, by + bh, wc.r, wc.g, wc.b, wc.a};
-        f->vertices[cnt++] = (Vertex){bx, by + bh, wc.r, wc.g, wc.b, wc.a};
-        f->vertices[cnt++] = (Vertex){bx + bw, by, wc.r, wc.g, wc.b, wc.a};
-        f->vertices[cnt++] = (Vertex){bx + bw, by + bh, wc.r, wc.g, wc.b, wc.a};
-        bx += 1.0f; by += 1.0f;
-        bw -= 2.0f; bh -= 2.0f;
-        // Foreground Block
-        f->vertices[cnt++] = (Vertex){bx, by, vertColor.r, vertColor.g, vertColor.b, vertColor.a};
-        f->vertices[cnt++] = (Vertex){bx + bw, by, vertColor.r, vertColor.g, vertColor.b, vertColor.a};
-        f->vertices[cnt++] = (Vertex){bx, by + bh, vertColor.r, vertColor.g, vertColor.b, vertColor.a};
-        f->vertices[cnt++] = (Vertex){bx, by + bh, vertColor.r, vertColor.g, vertColor.b, vertColor.a};
-        f->vertices[cnt++] = (Vertex){bx + bw, by, vertColor.r, vertColor.g, vertColor.b, vertColor.a};
-        f->vertices[cnt++] = (Vertex){bx + bw, by + bh, vertColor.r, vertColor.g, vertColor.b, vertColor.a};
-
+        updateBlockVertices(
+            f->vertices, 
+            &cnt,
+            ((int)(strParser % FIELD_WIDTH) * BLOCK_WIDTH),
+            ((int)(strParser / FIELD_WIDTH) * BLOCK_HEIGHT),
+            borderThickness,
+            &vertColor, &borderColor);
         // Get next character
         strParser++;
     }
@@ -276,7 +207,6 @@ int checkForFilledLines(PlayField* f, Tetrominoe* t)
         bottom--;
         bool filled = true;
         for(int i = 1; i < FIELD_WIDTH - 1; i++) {
-            //if(f->fieldLayout[(bottom * FIELD_WIDTH) + i] == '.') {
             if(f->fieldLayout[(bottom * FIELD_WIDTH) + i] == '.' 
                 || f->fieldLayout[(bottom * FIELD_WIDTH) + i] == '#') {
                     filled = false;
@@ -302,7 +232,7 @@ int checkForFilledLines(PlayField* f, Tetrominoe* t)
 bool checkGameOver(PlayField* f)
 {
     bool isOver = false;
-    int startRow = 0;//FIELD_START_ROW > 0 ? FIELD_START_ROW - 1 : 0;
+    int startRow = 0;
     for(int i = 1; i < FIELD_WIDTH - 1; i++) {
         if(f->fieldLayout[(startRow * FIELD_WIDTH) + i] != '#') {
             isOver = true;

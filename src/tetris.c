@@ -201,7 +201,7 @@ int main(int argc, char** argv)
     game.gameState = game.lastState = GameState_InMenu;
     game.running = true;
     game.labelStatusMessage = createText("GAME OVER !!!", FONT, 48.0f, wWidth / 2.0f - (6 * 48.0f), 48.0f);
-    setTextColor(game.labelStatusMessage, 1.0f, 0.0f, 0.0f);
+    setTextColor(game.labelStatusMessage, colorRed);
     game.labelStatusMessage->visible = false;
 
     Image* splash_screen = loadImage("assets/splash_screen.jpg");

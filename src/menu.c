@@ -101,7 +101,7 @@ Menu* createMenu(char* items, float x, float y, float fontSize)
     m->backgroundVertices[5] = (Vertex){mx, my, 0.0f, 0.0f, 1.0f, 1.0f};
 
     // Menu Selected Item
-    float selectedItemY = my;// + (m->selectedIndex * rowHeight);
+    float selectedItemY = my;
     m->barVertices[0] = (Vertex){mx, selectedItemY, 0.3f, 0.3f, 0.3f, 1.0f};
     m->barVertices[1] = (Vertex){mx, selectedItemY + rowHeight, 0.3f, 0.3f, 0.3f, 1.0f};
     m->barVertices[2] = (Vertex){mx + menuWidth, selectedItemY + rowHeight, 0.3f, 0.3f, 0.3f, 1.0f};

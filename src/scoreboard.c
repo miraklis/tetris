@@ -96,7 +96,7 @@ ScoreBoard* createScoreBoard(float x, float y, float fontSize)
             sb->y + (i * sb->fontSize * 1.5f)
         );
         if(i < 3) {
-            setTextColor(sb->items[i], 1.0f, 0.0f, 0.0f);
+            setTextColor(sb->items[i], colorRed);
         }
     }
 

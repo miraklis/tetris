@@ -36,7 +36,7 @@ Tetrominoe* createTetrominoe(TetrominoeType type)
         // ..X.
         // ..X.
             snprintf(t->shapeLayout, sizeof(t->shapeLayout), "%s", "..X...X...X...X.");
-            t->color = (Color){1.0f, 0.0f, 0.0f, 1.0f};
+            t->color = colorRed;
             break;
         case TT_Square:
         // ....
@@ -44,7 +44,7 @@ Tetrominoe* createTetrominoe(TetrominoeType type)
         // .XX.
         // ....
             snprintf(t->shapeLayout, sizeof(t->shapeLayout), "%s", ".....XX..XX.....");
-            t->color = (Color){0.0f, 0.0f, 1.0f, 1.0f};
+            t->color = colorBlue;
             break;
         case TT_T:
         // ..X.
@@ -52,7 +52,7 @@ Tetrominoe* createTetrominoe(TetrominoeType type)
         // ..X.
         // ....
             snprintf(t->shapeLayout, sizeof(t->shapeLayout), "%s", "..X..XX...X.....");
-            t->color = (Color){0.0f, 1.0f, 0.0f, 1.0f};
+            t->color = colorGreen;
             break;
         case TT_L1:
         // .X..
@@ -60,7 +60,7 @@ Tetrominoe* createTetrominoe(TetrominoeType type)
         // .XX.
         // ....
             snprintf(t->shapeLayout, sizeof(t->shapeLayout), "%s", ".X...X...XX.....");
-            t->color = (Color){1.0f, 1.0f, 0.0f, 1.0f};
+            t->color = colorYellow;
             break;
         case TT_L2:
         // ..X.
@@ -68,7 +68,7 @@ Tetrominoe* createTetrominoe(TetrominoeType type)
         // .XX.
         // ....
             snprintf(t->shapeLayout, sizeof(t->shapeLayout), "%s", "..X...X..XX.....");
-            t->color = (Color){0.8f, 0.2f, 0.5f, 1.0f};
+            t->color = colorPink;
             break;
         case TT_h1:
         // .X..
@@ -76,7 +76,7 @@ Tetrominoe* createTetrominoe(TetrominoeType type)
         // ..X.
         // ....
             snprintf(t->shapeLayout, sizeof(t->shapeLayout), "%s", ".X...XX...X.....");
-            t->color = (Color){0.0f, 1.0f, 1.0f, 1.0f};
+            t->color = colorCyan;
             break;
         case TT_h2:
         // ..X.
@@ -84,11 +84,11 @@ Tetrominoe* createTetrominoe(TetrominoeType type)
         // .X..
         // ....
             snprintf(t->shapeLayout, sizeof(t->shapeLayout), "%s", "..X..XX..X......");
-            t->color = (Color){0.3f, 0.2f, 0.9f, 1.0f};
+            t->color = colorPurple;
             break;
         default:
             snprintf(t->shapeLayout, sizeof(t->shapeLayout), "%s", "................");
-            t->color = (Color){0.0f, 0.0f, 0.0f, 0.0f};
+            t->color = colorBlack;
             break;        
     }
     // move the origin to the center of the piece for easier rotation
@@ -96,33 +96,22 @@ Tetrominoe* createTetrominoe(TetrominoeType type)
     t->centerOffsetY = 2.0f;
     // Create vertices (4 blocks * 12 vertices per block = 48 vertices total)
     unsigned int strParser = 0;
-    unsigned int vertCnt = 0;
+    int vertCnt = 0;
     while(strParser < sizeof(t->shapeLayout) - 1) {
         if(t->shapeLayout[strParser]=='.') {
             strParser++;
             continue;
         } else {
-            float bw = BLOCK_WIDTH;
-            float bh = BLOCK_HEIGHT;            
-            float bx = ((int)(strParser % 4) - t->centerOffsetX) * bw;
-            float by = ((int)(strParser / 4) - t->centerOffsetY) * bh;        
-            // Background block
             Color wc = {0.6f, 0.6f, 0.6f, 1.0f};
-            t->vertices[vertCnt++] = (Vertex){bx, by, wc.r, wc.g, wc.b, wc.a};
-            t->vertices[vertCnt++] = (Vertex){bx + bw, by, wc.r, wc.g, wc.b, wc.a};
-            t->vertices[vertCnt++] = (Vertex){bx, by + bh, wc.r, wc.g, wc.b, wc.a};
-            t->vertices[vertCnt++] = (Vertex){bx, by + bh, wc.r, wc.g, wc.b, wc.a};
-            t->vertices[vertCnt++] = (Vertex){bx + bw, by, wc.r, wc.g, wc.b, wc.a}; 
-            t->vertices[vertCnt++] = (Vertex){bx + bw, by + bh, wc.r, wc.g, wc.b, wc.a};
-            bx += 1.0f; by += 1.0f;
-            bw -= 2.0f; bh -= 2.0f;
-            // Foreground Block
-            t->vertices[vertCnt++] = (Vertex){bx, by, t->color.r, t->color.g, t->color.b, t->color.a};
-            t->vertices[vertCnt++] = (Vertex){bx + bw, by, t->color.r, t->color.g, t->color.b, t->color.a};
-            t->vertices[vertCnt++] = (Vertex){bx, by + bh, t->color.r, t->color.g, t->color.b, t->color.a};
-            t->vertices[vertCnt++] = (Vertex){bx, by + bh, t->color.r, t->color.g, t->color.b, t->color.a};
-            t->vertices[vertCnt++] = (Vertex){bx + bw, by, t->color.r, t->color.g, t->color.b, t->color.a};
-            t->vertices[vertCnt++] = (Vertex){bx + bw, by + bh, t->color.r, t->color.g, t->color.b, t->color.a};
+            float borderThickness = 1.0f;
+            updateBlockVertices(
+                t->vertices, 
+                &vertCnt,
+                ((int)(strParser % 4) - t->centerOffsetX) * BLOCK_WIDTH,
+                ((int)(strParser / 4) - t->centerOffsetY) * BLOCK_HEIGHT,
+                borderThickness,
+                &t->color, &wc);
+            // Get next character
             strParser++;
         }
     }

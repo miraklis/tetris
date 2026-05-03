@@ -26,10 +26,24 @@ typedef struct sColor {
 
 extern const SDL_DisplayMode* dm;
 
+extern Color colorBlack;
+extern Color colorGray10;
+extern Color colorGray20;
+extern Color colorGray60;
+extern Color colorRed;
+extern Color colorBlue;
+extern Color colorGreen;
+extern Color colorYellow;
+extern Color colorPink;
+extern Color colorCyan;
+extern Color colorPurple;
+extern Color colorWhite;
+
 void orthoMatrix(float left, float right, float bottom, float top, float near, float far, float* m);
 void translateMatrix(float x, float y, float* m);
 void rotateMatrix(float angle, float* m);
-
 void multiplyMatrix4x4(const float* a, const float* b, float* out);
+
+void updateBlockVertices(Vertex* vertices, int* count, float bx, float by, float borderThickness, const Color* blockColor, const Color* borderColor);
 
 #endif

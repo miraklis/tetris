@@ -43,8 +43,7 @@ Text* createText(char* str, char* fontName, float fontSize, float x, float y);
 void moveText(Text* t, float x, float y);
 void setText(Text* t, char* str);
 void changeText(Text* t, int pos, char* str);
-void setTextColor(Text* t, float r, float g, float b);
-//void setFontSize(Text* t, float fontSize);
+void setTextColor(Text* t, Color cl);//float r, float g, float b);
 void destroyText(Text* t);
 void drawText(Text* t, ColoredTextureShader* shader);
 

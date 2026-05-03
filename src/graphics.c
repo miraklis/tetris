@@ -7,6 +7,19 @@
 
 const SDL_DisplayMode* dm;
 
+Color colorBlack = {0.0f, 0.0f, 0.0f, 1.0f};
+Color colorGray10 = {0.1f, 0.1f, 0.1f, 1.0f};
+Color colorGray20 = {0.2f, 0.2f, 0.2f, 1.0f};
+Color colorGray60 = {0.6f, 0.6f, 0.6f, 1.0f};
+Color colorRed = {1.0f, 0.0f, 0.0f, 1.0f};
+Color colorBlue = {0.0f, 0.0f, 1.0f, 1.0f};
+Color colorGreen = {0.0f, 1.0f, 0.0f, 1.0f};
+Color colorYellow = {1.0f, 1.0f, 0.0f, 1.0f};
+Color colorPink = {0.8f, 0.2f, 0.5f, 1.0f};
+Color colorCyan = {0.0f, 1.0f, 1.0f, 1.0f};
+Color colorPurple = {0.3f, 0.2f, 0.9f, 1.0f};
+Color colorWhite = {1.0f, 1.0f, 1.0f, 1.0f};
+
 void orthoMatrix(float left, float right, float bottom, float top, float near, float far, float* m)
 {
     m[0] = 2/(right-left);  m[4] = 0;               m[8] = 0;               m[12] = -(right+left)/(right-left);
@@ -50,4 +63,27 @@ void multiplyMatrix4x4(const float* a, const float* b, float* out)
                 a[3 * 4 + row] * b[col * 4 + 3];
         }
     }
+}
+
+inline void updateBlockVertices(Vertex* vertices, int* count, float bx, float by, float borderThickness, const Color* blockColor, const Color* borderColor)
+{
+        float bw = BLOCK_WIDTH;
+        float bh = BLOCK_HEIGHT;
+        // Background block (used as border of the block)
+        vertices[(*count)++] = (Vertex){bx, by, borderColor->r, borderColor->g, borderColor->b, borderColor->a};
+        vertices[(*count)++] = (Vertex){bx + bw, by, borderColor->r, borderColor->g, borderColor->b, borderColor->a};
+        vertices[(*count)++] = (Vertex){bx, by + bh, borderColor->r, borderColor->g, borderColor->b, borderColor->a};
+        vertices[(*count)++] = (Vertex){bx, by + bh, borderColor->r, borderColor->g, borderColor->b, borderColor->a};
+        vertices[(*count)++] = (Vertex){bx + bw, by, borderColor->r, borderColor->g, borderColor->b, borderColor->a};
+        vertices[(*count)++] = (Vertex){bx + bw, by + bh, borderColor->r, borderColor->g, borderColor->b, borderColor->a};
+        // Define border thickness
+        bx += borderThickness; by += borderThickness;
+        bw -= (borderThickness * 2.0f); bh -= (borderThickness * 2.0f);
+        // Foreground Block
+        vertices[(*count)++] = (Vertex){bx, by, blockColor->r, blockColor->g, blockColor->b, blockColor->a};
+        vertices[(*count)++] = (Vertex){bx + bw, by, blockColor->r, blockColor->g, blockColor->b, blockColor->a};
+        vertices[(*count)++] = (Vertex){bx, by + bh, blockColor->r, blockColor->g, blockColor->b, blockColor->a};
+        vertices[(*count)++] = (Vertex){bx, by + bh, blockColor->r, blockColor->g, blockColor->b, blockColor->a};
+        vertices[(*count)++] = (Vertex){bx + bw, by, blockColor->r, blockColor->g, blockColor->b, blockColor->a};
+        vertices[(*count)++] = (Vertex){bx + bw, by + bh, blockColor->r, blockColor->g, blockColor->b, blockColor->a};    
 }
