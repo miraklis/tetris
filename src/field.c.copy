@@ -2,8 +2,6 @@
 #include "graphics.h"
 #include "shaders.h"
 #include "tetrominoe.h"
-#include <GLES3/gl3.h>
-#include <string.h>
 #include "field.h"
 
 static void updateModelMatrix(PlayField* f)
@@ -11,33 +9,57 @@ static void updateModelMatrix(PlayField* f)
     translateMatrix(f->rx, f->ry, f->model);
 }
 
-static void updateField(PlayField* f, bool upload)
+void updateField(PlayField* f)
 {
-    unsigned int strParser = 0;
-    int cnt = 0;
-    size_t totalChars = strlen(f->fieldLayout);
+    if(f->vertices != NULL)
+        free(f->vertices);
     
-    while(strParser < totalChars) {
-        Color wc = {0.1f, 0.1f, 0.1f, 1.0f};
-        Color vertColor = {0.6f, 0.6f, 0.6f, 1.0f};
+    unsigned int strParser = 0;
+    f->vertCount = 0;
+    while(strParser < sizeof(f->fieldLayout)) {
+        if(f->fieldLayout[strParser]=='.' || f->fieldLayout[strParser]=='@') {
+            strParser++;
+            continue;
+        }
+        f->vertCount += 12;
+        strParser++;
+    }
 
-        if(f->fieldLayout[strParser]=='.') {
-            vertColor.r = 0.0f;
-            vertColor.g = 0.0f;
-            vertColor.b = 0.0f;
+    f->vertCount += 6;
+    
+    Vertex* v = (Vertex*)malloc(sizeof(Vertex) * f->vertCount);
+    f->vertices = v;
+    
+    Color vertColor;
+    vertColor.a = 1.0f;
+    strParser = 0;
+    int cnt = 0;
+
+    // Background color
+    Color bc = {0.0f, 0.0f, 0.0f, 1.0f};
+    float bxx = 0.0f;
+    float byy = 0.0f;
+    float bww = BLOCK_WIDTH * FIELD_WIDTH;
+    float bhh = BLOCK_HEIGHT * FIELD_HEIGHT;
+    v[cnt++] = (Vertex){bxx, byy, bc.r, bc.g, bc.b, bc.a};
+    v[cnt++] = (Vertex){bxx + bww, byy, bc.r, bc.g, bc.b, bc.a};
+    v[cnt++] = (Vertex){bxx, byy + bhh, bc.r, bc.g, bc.b, bc.a};
+    v[cnt++] = (Vertex){bxx, byy + bhh, bc.r, bc.g, bc.b, bc.a};
+    v[cnt++] = (Vertex){bxx + bww, byy, bc.r, bc.g, bc.b, bc.a};
+    v[cnt++] = (Vertex){bxx + bww, byy + bhh, bc.r, bc.g, bc.b, bc.a};
+
+
+    while(strParser < sizeof(f->fieldLayout)) {
+        if(f->fieldLayout[strParser]=='.' || f->fieldLayout[strParser]=='@') {
+            strParser++;
+            continue;
         }
         if(f->fieldLayout[strParser]=='#') {
-            wc.r = 0.6f;
-            wc.g = 0.6f;
-            wc.b = 0.6f;
             vertColor.r = 0.2f;
             vertColor.g = 0.2f;
             vertColor.b = 0.2f;
         }
-        if(f->fieldLayout[strParser]!='.' && f->fieldLayout[strParser]!='#') {
-            wc.r = 0.6f;
-            wc.g = 0.6f;
-            wc.b = 0.6f;
+        else {
             char c = f->fieldLayout[strParser];
             switch(c) {
                 case '0':
@@ -87,55 +109,50 @@ static void updateField(PlayField* f, bool upload)
                     break;
             }
         }
-
         // Background
         float bw = BLOCK_WIDTH;
         float bh = BLOCK_HEIGHT;
         float bx = ((int)(strParser % FIELD_WIDTH) * bw);
         float by = ((int)(strParser / FIELD_WIDTH) * bh);
         // Background block (used as border of the block)
-        f->vertices[cnt++] = (Vertex){bx, by, wc.r, wc.g, wc.b, wc.a};
-        f->vertices[cnt++] = (Vertex){bx + bw, by, wc.r, wc.g, wc.b, wc.a};
-        f->vertices[cnt++] = (Vertex){bx, by + bh, wc.r, wc.g, wc.b, wc.a};
-        f->vertices[cnt++] = (Vertex){bx, by + bh, wc.r, wc.g, wc.b, wc.a};
-        f->vertices[cnt++] = (Vertex){bx + bw, by, wc.r, wc.g, wc.b, wc.a};
-        f->vertices[cnt++] = (Vertex){bx + bw, by + bh, wc.r, wc.g, wc.b, wc.a};
+        Color wc = {0.6f, 0.6f, 0.6f, 1.0f};
+        v[cnt++] = (Vertex){bx, by, wc.r, wc.g, wc.b, wc.a};
+        v[cnt++] = (Vertex){bx + bw, by, wc.r, wc.g, wc.b, wc.a};
+        v[cnt++] = (Vertex){bx, by + bh, wc.r, wc.g, wc.b, wc.a};
+        v[cnt++] = (Vertex){bx, by + bh, wc.r, wc.g, wc.b, wc.a};
+        v[cnt++] = (Vertex){bx + bw, by, wc.r, wc.g, wc.b, wc.a};
+        v[cnt++] = (Vertex){bx + bw, by + bh, wc.r, wc.g, wc.b, wc.a};
         bx += 1.0f; by += 1.0f;
         bw -= 2.0f; bh -= 2.0f;
         // Foreground Block
-        f->vertices[cnt++] = (Vertex){bx, by, vertColor.r, vertColor.g, vertColor.b, vertColor.a};
-        f->vertices[cnt++] = (Vertex){bx + bw, by, vertColor.r, vertColor.g, vertColor.b, vertColor.a};
-        f->vertices[cnt++] = (Vertex){bx, by + bh, vertColor.r, vertColor.g, vertColor.b, vertColor.a};
-        f->vertices[cnt++] = (Vertex){bx, by + bh, vertColor.r, vertColor.g, vertColor.b, vertColor.a};
-        f->vertices[cnt++] = (Vertex){bx + bw, by, vertColor.r, vertColor.g, vertColor.b, vertColor.a};
-        f->vertices[cnt++] = (Vertex){bx + bw, by + bh, vertColor.r, vertColor.g, vertColor.b, vertColor.a};
-
-        // Get next character
+        v[cnt++] =  (Vertex){bx, by, vertColor.r, vertColor.g, vertColor.b, vertColor.a};
+        v[cnt++] =  (Vertex){bx + bw, by, vertColor.r, vertColor.g, vertColor.b, vertColor.a};
+        v[cnt++] =  (Vertex){bx, by + bh, vertColor.r, vertColor.g, vertColor.b, vertColor.a};
+        v[cnt++] =  (Vertex){bx, by + bh, vertColor.r, vertColor.g, vertColor.b, vertColor.a};
+        v[cnt++] =  (Vertex){bx + bw, by, vertColor.r, vertColor.g, vertColor.b, vertColor.a};
+        v[cnt++] =  (Vertex){bx + bw, by + bh, vertColor.r, vertColor.g, vertColor.b, vertColor.a};
         strParser++;
     }
 
-    if(upload) {
-        glBindBuffer(GL_ARRAY_BUFFER, f->vbo);
-        glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Vertex) * f->vertCount, f->vertices);
-    }
+    glBindBuffer(GL_ARRAY_BUFFER, f->vbo);    
+    glBufferData(GL_ARRAY_BUFFER, f->vertCount * sizeof(Vertex), f->vertices, GL_DYNAMIC_DRAW);
 }
 
 PlayField* createField(int wx, int wy)
 {
     PlayField* f = (PlayField*)malloc(sizeof(PlayField));
 
-    f->vertCount = ((FIELD_HEIGHT * FIELD_HEIGHT * 2) * 6);
-    f->vertices = (Vertex*)malloc(sizeof(Vertex) * f->vertCount);
-
     f->lastTick = 0;
     f->lastStepTick = 0;
     f->piecesCnt = 0;
     f->pieceOnStack = false;
 
+    f->vertices = NULL;
     for(int i=0; i < FIELD_HEIGHT; i++) {
         for(int j=0; j < FIELD_WIDTH; j++) {
-            if(j==0 || i ==0 || j==FIELD_WIDTH-1 || i==FIELD_HEIGHT-1)
-                f->fieldLayout[(i * FIELD_WIDTH) + j] = '#';
+            char c = i >=FIELD_START_ROW ? '#' : '@';
+            if(j==0 || j==FIELD_WIDTH-1 || i==FIELD_HEIGHT-1)
+                f->fieldLayout[(i * FIELD_WIDTH) + j] = c;
             else
                 f->fieldLayout[(i * FIELD_WIDTH) + j] = '.';;
         }
@@ -145,8 +162,6 @@ PlayField* createField(int wx, int wy)
     f->rx = wx * BLOCK_WIDTH;
     f->ry = wy * BLOCK_HEIGHT;
 
-    updateField(f, false);
-
     glGenVertexArrays(1, &f->vao);
     glGenBuffers(1, &f->vbo);
     glBindVertexArray(f->vao);
@@ -155,11 +170,12 @@ PlayField* createField(int wx, int wy)
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(2*sizeof(float)));
     glEnableVertexAttribArray(1);
-    glBufferData(GL_ARRAY_BUFFER, f->vertCount * sizeof(Vertex), f->vertices, GL_DYNAMIC_DRAW);
-    
+
+    updateField(f);
+
     orthoMatrix(0, dm->w, dm->h, 0, -1, 1, f->proj);
     updateModelMatrix(f);
-    
+
     return f;
 }
 
@@ -176,7 +192,7 @@ void createNewTetrominoes(PlayField* f)
     attachTetrominoeToField(f, current);
     attachTetrominoeToField(f, next);
     placeTetrominoe((FIELD_WIDTH / 2) - 2, 0, current);
-    placeTetrominoe(FIELD_WIDTH, 0, next);
+    placeTetrominoe(FIELD_WIDTH, FIELD_START_ROW, next);
     current->isAlive = true;
     f->currentPiece = current;
     f->nextPiece = next;
@@ -256,12 +272,15 @@ void removeFilledLines(PlayField* f)
                 }
                 yy--;
             }
-            updateField(f, true);
+            updateField(f);
             bottom++;
         }
     }
     for(int i = 0; i < FIELD_WIDTH; i++) {
-        f->fieldLayout[i] = '#';
+        if(f->fieldLayout[i] == 0 || i == FIELD_WIDTH - 1)
+            f->fieldLayout[i] = '@';
+        else
+            f->fieldLayout[i] = '.';
     }
 }
 
@@ -276,11 +295,9 @@ int checkForFilledLines(PlayField* f, Tetrominoe* t)
         bottom--;
         bool filled = true;
         for(int i = 1; i < FIELD_WIDTH - 1; i++) {
-            //if(f->fieldLayout[(bottom * FIELD_WIDTH) + i] == '.') {
-            if(f->fieldLayout[(bottom * FIELD_WIDTH) + i] == '.' 
-                || f->fieldLayout[(bottom * FIELD_WIDTH) + i] == '#') {
-                    filled = false;
-                    break;
+            if(f->fieldLayout[(bottom * FIELD_WIDTH) + i] == '.') {
+                filled = false;
+                break;
             }
         }
         if(filled) {
@@ -302,9 +319,9 @@ int checkForFilledLines(PlayField* f, Tetrominoe* t)
 bool checkGameOver(PlayField* f)
 {
     bool isOver = false;
-    int startRow = 0;//FIELD_START_ROW > 0 ? FIELD_START_ROW - 1 : 0;
+    int startRow = FIELD_START_ROW > 0 ? FIELD_START_ROW - 1 : 0;
     for(int i = 1; i < FIELD_WIDTH - 1; i++) {
-        if(f->fieldLayout[(startRow * FIELD_WIDTH) + i] != '#') {
+        if(f->fieldLayout[(startRow * FIELD_WIDTH) + i] != '.') {
             isOver = true;
             break;
         }
@@ -400,5 +417,5 @@ void addPieceOnStack(PlayField* f, Tetrominoe* t)
         y++;
     }
     f->piecesCnt++;
-    updateField(f, true);
+    updateField(f);
 }

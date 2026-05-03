@@ -36,6 +36,9 @@ void freeGameObjects(PlayField* field[MAX_PLAYERS], Player* player[MAX_PLAYERS])
 {
     for(int i=0; i < MAX_PLAYERS; i++) {
         if(field[i] != NULL) {
+            free(field[i]->currentPiece);
+            free(field[i]->nextPiece);
+            free(field[i]->vertices);
             free(field[i]);
             field[i] = NULL;
         }
@@ -262,7 +265,7 @@ int main(int argc, char** argv)
             moveText(player[0]->statusText, field[0]->rx, field[0]->ry + (FIELD_HEIGHT * BLOCK_HEIGHT) + 44.0f);
             game.gameState = GameState_Playing;
             menu->visible = false;
-            splash_screen->visible = false;
+            //splash_screen->visible = false;
             scoreBoard->visible = true;
             game.labelStatusMessage->visible = false;
             printf("status = %s", player[0]->statusMessage);
@@ -277,14 +280,15 @@ int main(int argc, char** argv)
             moveText(player[1]->statusText, field[1]->rx, field[1]->ry + (FIELD_HEIGHT * BLOCK_HEIGHT) + 44.0f);
             field[0] = createField((int)(dm->w / BLOCK_WIDTH) - FIELD_WIDTH, 0);
             createNewTetrominoes(field[0]);
-            placeTetrominoe(field[0]->wx - 4, FIELD_START_ROW, field[0]->nextPiece);
+            //placeTetrominoe(field[0]->wx - 4, FIELD_START_ROW, field[0]->nextPiece);
+            placeTetrominoe(field[0]->wx - 4, 0, field[0]->nextPiece);
             player[0] = createPlayer(1);
             moveText(player[0]->scoreText, field[0]->rx - (FIELD_WIDTH * BLOCK_WIDTH), field[0]->ry + 44.0f);
             moveText(player[0]->statusText, field[0]->rx, field[0]->ry + (FIELD_HEIGHT * BLOCK_HEIGHT) + 44.0f);
 
             game.gameState = GameState_Playing;
             menu->visible = false;
-            splash_screen->visible = false;
+            //splash_screen->visible = false;
             scoreBoard->visible = true;
             game.labelStatusMessage->visible = false;
         }
@@ -401,7 +405,7 @@ int main(int argc, char** argv)
         // ************************
         // RENDER
         // ************************
-        glClearColor(0.1f,0.2f,0.3f,1.0f);
+        glClearColor(0.0f,0.0f,0.0f,1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
         drawImage(splash_screen, textureShader);

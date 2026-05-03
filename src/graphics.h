@@ -9,8 +9,9 @@
 #define BLOCK_WIDTH 34
 #define BLOCK_HEIGHT 34
 #define FIELD_WIDTH 12
-#define FIELD_HEIGHT 25
-#define FIELD_START_ROW 4
+// #define FIELD_HEIGHT 25
+#define FIELD_HEIGHT 22
+//#define FIELD_START_ROW 4
 
 #define FONT "assets/PressStart2P-Regular.ttf"
 

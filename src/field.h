@@ -34,7 +34,7 @@ void moveCurrentPiece(PlayField* f, int x, int y);
 void rotateCurrentPiece(PlayField* f);
 
 void drawField(PlayField* f, GameShader* shader);
-void updateField(PlayField* f);
+//void updateField(PlayField* f);
 void removeFilledLines(PlayField* f);
 int checkForFilledLines(PlayField* f, Tetrominoe* t);
 bool checkGameOver(PlayField* f);
