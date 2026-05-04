@@ -85,5 +85,5 @@ inline void updateBlockVertices(Vertex* vertices, int* count, float bx, float by
         vertices[(*count)++] = (Vertex){bx, by + bh, blockColor->r, blockColor->g, blockColor->b, blockColor->a};
         vertices[(*count)++] = (Vertex){bx, by + bh, blockColor->r, blockColor->g, blockColor->b, blockColor->a};
         vertices[(*count)++] = (Vertex){bx + bw, by, blockColor->r, blockColor->g, blockColor->b, blockColor->a};
-        vertices[(*count)++] = (Vertex){bx + bw, by + bh, blockColor->r, blockColor->g, blockColor->b, blockColor->a};    
+        vertices[(*count)++] = (Vertex){bx + bw, by + bh, blockColor->r, blockColor->g, blockColor->b, blockColor->a};
 }

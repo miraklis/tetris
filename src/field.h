@@ -3,38 +3,33 @@
 
 #include "graphics.h"
 #include "shaders.h"
+#include "fieldWindow.h"
 #include "tetrominoe.h"
 #include "player.h"
 
 typedef struct sPlayField {
-    int wx, wy;
-    float rx, ry;
-    char fieldLayout[FIELD_WIDTH * FIELD_HEIGHT];
+    FieldWindow* fieldWindow;
+    FieldWindow* nextPieceWindow;
+    FieldWindow* infoWindow;
+    Tetrominoe* currentPiece;
+    Tetrominoe* nextPiece;
+    Player* player;
+    Text* scoreText;
+    Text* statusText;
 
     unsigned long lastTick;
     unsigned long lastStepTick;
     unsigned int piecesCnt;
     bool pieceOnStack;
-
-    size_t vertCount;
-    Tetrominoe* currentPiece;
-    Tetrominoe* nextPiece;
-
-    GLuint vao;
-    GLuint vbo;
-    float proj[16];
-    float model[16];
-    Vertex* vertices;
 } PlayField;
 
-PlayField* createField(int wx, int wy);
-void createNewTetrominoes(PlayField* f);
+
+PlayField* createField(int wx, int wy, unsigned char playernum, bool nextWindowPosToLeft);
 void getNextTetrominoe(PlayField* f);
 void moveCurrentPiece(PlayField* f, int x, int y);
 void rotateCurrentPiece(PlayField* f);
 
-void drawField(PlayField* f, GameShader* shader);
-//void updateField(PlayField* f);
+void drawField(PlayField* f, GameShader* shader, ColoredTextureShader* coloredTextureShader);
 void removeFilledLines(PlayField* f);
 int checkForFilledLines(PlayField* f, Tetrominoe* t);
 bool checkGameOver(PlayField* f);

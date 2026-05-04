@@ -36,24 +36,4 @@ ColoredTextureShader* createColoredTextureShader(void);
 
 void useProgram(GLuint shader);
 
-
-// typedef enum eProgramId {
-//     PRG_DEFAULT = 0,
-//     PRG_DEFAULT_TEXT,
-//     PRG_COUNT
-// } ProgramId;
-
-// typedef struct sProgram {
-//     GLuint shaderProgram;
-//     ProgramId id;
-//     GLint uniformLocation[MAX_UNIFORMS];
-// } Program;
-
-// extern GLuint programsPool[PRG_COUNT];
-// extern GLint uniformsLocations[PRG_COUNT][MAX_UNIFORMS];
-
-//void createProgram(const char* vs, const char* fs, ProgramId id);
-//Program* createProgram(const char* vs, const char* fs, ProgramId id, char* uniforms[MAX_UNIFORMS]);
-//void useProgram(GLuint shader);
-
 #endif

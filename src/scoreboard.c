@@ -1,3 +1,5 @@
+#include "fieldWindow.h"
+#include "graphics.h"
 #include "std.h"
 #include "shaders.h"
 #include "text.h"
@@ -62,38 +64,42 @@ void addScore(ScoreBoard* sb, int score)
     writeToFile(sb);
 }
 
-ScoreBoard* createScoreBoard(float x, float y, float fontSize)
+ScoreBoard* createScoreBoard(int wx, int wy, float fontSize)
 {
     ScoreBoard* sb = (ScoreBoard*)malloc(sizeof(ScoreBoard));
-    sb->x = x;
-    sb->y = y;
+    sb->window = createFieldWindow(wx, wy, 16, 14, false);
+
+    readFromFile(sb);
+
     sb->fontSize = fontSize;
     sb->visible = false;
     
-    readFromFile(sb);
 
     char* positions[MAX_SCORES] = {
-        "1ST PLACE :",
-        "2ND PLACE :",
-        "3RD PLACE :",
-        "4TH PLACE :",
-        "5TH PLACE :",
-        "6TH PLACE :",
-        "7TH PLACE :",
-        "8TH PLACE :",
-        "9TH PLACE :",
-        "10TH PLACE:"
+        " 1ST PLACE :",
+        " 2ND PLACE :",
+        " 3RD PLACE :",
+        " 4TH PLACE :",
+        " 5TH PLACE :",
+        " 6TH PLACE :",
+        " 7TH PLACE :",
+        " 8TH PLACE :",
+        " 9TH PLACE :",
+        "10TH PLACE :"
     };
 
+    float marginX = 60.0f;
+    float marginY = 50.0f;
+    float paddingY = fontSize * 1.8f;
     for(int i = 0; i < MAX_SCORES; i++) {
-        char scoreText[22];
+        char scoreText[20] = {0};
         snprintf(scoreText, sizeof(scoreText), "%s %6d", positions[i], sb->scores[i]);
         sb->items[i] = createText(
             scoreText,
             FONT,
             sb->fontSize,
-            sb->x,
-            sb->y + (i * sb->fontSize * 1.5f)
+            sb->window->rx + marginX,
+            sb->window->ry + (i * paddingY) + marginY
         );
         if(i < 3) {
             setTextColor(sb->items[i], colorRed);
@@ -103,14 +109,15 @@ ScoreBoard* createScoreBoard(float x, float y, float fontSize)
     return sb;
 }
 
-void drawScoreBoard(ScoreBoard* sb, ColoredTextureShader* shader)
+void drawScoreBoard(ScoreBoard* sb, GameShader* gameShader, ColoredTextureShader* coloredTextureShader)
 {
     if(sb == NULL || !sb->visible)
         return;
 
+    drawFieldWindow(sb->window, gameShader);
     for(int i = 0; i < MAX_SCORES; i++) {
         if(sb->items[i] != NULL) {
-            drawText(sb->items[i], shader);
+            drawText(sb->items[i], coloredTextureShader);
         }
     }
 }

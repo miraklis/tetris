@@ -12,12 +12,10 @@ typedef enum {
 
 typedef struct sPlayer {
     unsigned int playerScore;
+    unsigned char playerNum;
     float gameSpeed;
-    char playerNum;
     char statusMessage[20];
     PlayerState playerState;
-    Text* scoreText;
-    Text* statusText;
 } Player;
 
 Player* createPlayer(int playerNum);
