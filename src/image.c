@@ -57,7 +57,7 @@ Image* loadImage(char* path)
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
 
-    orthoMatrix(0, dm->w, dm->h, 0, -1, 1, image->proj);
+    orthoMatrix(0, dm->w, 0, dm->h, -1, 1, image->proj);
     translateMatrix(image->x, image->y, image->model);
     image->visible = true;
 

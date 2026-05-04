@@ -201,7 +201,7 @@ int main(int argc, char** argv)
     setTextColor(game.labelStatusMessage, colorRed);
     game.labelStatusMessage->visible = false;
 
-    Image* splash_screen = loadImage("assets/splash_screen.jpg");
+    Image* splash_screen = loadImage("assets/splash_screen.webp");
 
     Menu* menu;
     menu = createMenu("1 PLAYER GAME|2 PLAYER GAME|EXIT|", wWidth / 2.0f, wHeight / 5.0f, 24.0f);
