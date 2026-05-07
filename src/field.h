@@ -19,8 +19,10 @@ typedef struct sPlayField {
 
     unsigned long lastTick;
     unsigned long lastStepTick;
+    unsigned long lastGlowTick;
     unsigned int piecesCnt;
     bool pieceOnStack;
+    bool glowEffect;
 } PlayField;
 
 

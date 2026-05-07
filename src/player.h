@@ -7,6 +7,7 @@ typedef enum {
     PlayerState_Idle = 0,
     PlayerState_Playing,
     PlayerState_GameOver,
+    PlayerState_Paused,
     PlayerState_Count
 } PlayerState;
 

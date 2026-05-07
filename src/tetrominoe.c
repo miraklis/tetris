@@ -1,6 +1,7 @@
 #include "std.h"
 #include "graphics.h"
 #include "shaders.h"
+#include <GLES3/gl3.h>
 #include "tetrominoe.h"
 
 static void updateModelMatrix(Tetrominoe* t)
@@ -110,7 +111,7 @@ Tetrominoe* createTetrominoe(TetrominoeType type)
                 ((int)(strParser % 4) - t->centerOffsetX) * BLOCK_WIDTH,
                 ((int)(strParser / 4) - t->centerOffsetY) * BLOCK_HEIGHT,
                 borderThickness,
-                &t->color, &wc);
+                &t->color, &wc, 0.0f);
             // Get next character
             strParser++;
         }
@@ -125,6 +126,8 @@ Tetrominoe* createTetrominoe(TetrominoeType type)
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(2*sizeof(float)));
     glEnableVertexAttribArray(1);
+    glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(6*sizeof(float)));
+    glEnableVertexAttribArray(2);
     glBufferData(GL_ARRAY_BUFFER, TETROMINOE_VERTICES_COUNT * sizeof(Vertex), t->vertices, GL_DYNAMIC_DRAW);
 
     // Update uniforms proj and model
@@ -162,6 +165,7 @@ void drawTetrominoe(Tetrominoe* t, GameShader* shader)//GLint program)
     useProgram(shader->program);
     glUniformMatrix4fv(shader->locProj, 1, GL_FALSE, t->proj);
     glUniformMatrix4fv(shader->locModel, 1, GL_FALSE, t->model);
+    glUniform1f(shader->locTime, 0.0f);
     glBindVertexArray(t->vao);
     glDrawArrays(GL_TRIANGLES, 0, TETROMINOE_VERTICES_COUNT);
 }

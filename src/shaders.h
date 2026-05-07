@@ -2,11 +2,13 @@
 #define SHADERS_H
 
 #include "graphics.h"
+#include <GLES3/gl3.h>
 
 typedef struct sGameShader {
     GLuint program;
     GLint locProj;
     GLint locModel;
+    GLfloat locTime;
 } GameShader;
 
 typedef struct sTextureShader {

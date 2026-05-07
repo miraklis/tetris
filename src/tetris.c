@@ -333,7 +333,7 @@ int main(int argc, char** argv)
                 }
                 // If step time passed, move down a block
                 unsigned long stepTicks = SDL_GetTicks();
-                if(stepTicks - field[i]->lastStepTick >= (1000.0f / player->gameSpeed)) {
+                if(field[i]->player->playerState == PlayerState_Playing && stepTicks - field[i]->lastStepTick >= (1000.0f / player->gameSpeed)) {
                     if(field[i]->currentPiece->isAlive) {
                         if(!checkCollissions(field[i], field[i]->currentPiece, 0, 1,false)) {
                             moveTetrominoe(0, 1, field[i]->currentPiece);
@@ -341,6 +341,14 @@ int main(int argc, char** argv)
                         } else {
                             field[i]->pieceOnStack = true;
                         }
+                    }
+                }
+                if(field[i]->glowEffect) {
+                    if(stepTicks - field[i]->lastGlowTick >= 400) {
+                        field[i]->glowEffect = false;
+                        field[i]->lastStepTick = 0;
+                        field[i]->player->playerState = PlayerState_Playing;
+                        removeFilledLines(field[i]);
                     }
                 }
                 if(field[i]->pieceOnStack) {
@@ -352,7 +360,10 @@ int main(int argc, char** argv)
                     scoreFromLines = checkForFilledLines(field[i], field[i]->currentPiece);
                     if(scoreFromLines > 0) {
                         player->playerScore += scoreFromLines * LINE_FILLED_SCORE;
-                        removeFilledLines(field[i]);
+                        field[i]->glowEffect = true;
+                        field[i]->lastGlowTick = SDL_GetTicks();
+                        field[i]->player->playerState = PlayerState_Paused;
+                        //removeFilledLines(field[i]);                        
                     } else {
                         player->playerScore += PIECE_DOWN_SCORE;
                     }
