@@ -18,7 +18,7 @@ typedef struct sFieldWindow {
     Vertex* vertices;
 } FieldWindow;
 
-FieldWindow* createFieldWindow(int wx, int wy, int width, int height, bool filledBackground);
+FieldWindow* createFieldWindow(int wx, int wy, int width, int height, bool filledBackground, Color* backgroundColor);
 void updateFieldWindow(FieldWindow* f);
 void drawFieldWindow(FieldWindow* f, GameShader* shader);
 

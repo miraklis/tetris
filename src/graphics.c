@@ -19,6 +19,7 @@ Color colorPink = {0.8f, 0.2f, 0.5f, 1.0f};
 Color colorCyan = {0.0f, 1.0f, 1.0f, 1.0f};
 Color colorPurple = {0.3f, 0.2f, 0.9f, 1.0f};
 Color colorWhite = {1.0f, 1.0f, 1.0f, 1.0f};
+Color transparentBlack80 = {0, 0, 0, 0.8f};
 
 void orthoMatrix(float left, float right, float bottom, float top, float near, float far, float* m)
 {

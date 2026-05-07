@@ -67,7 +67,7 @@ void addScore(ScoreBoard* sb, int score)
 ScoreBoard* createScoreBoard(int wx, int wy, float fontSize)
 {
     ScoreBoard* sb = (ScoreBoard*)malloc(sizeof(ScoreBoard));
-    sb->window = createFieldWindow(wx, wy, 16, 14, false);
+    sb->window = createFieldWindow(wx, wy, 16, 14, false, &transparentBlack80);
 
     readFromFile(sb);
 

@@ -36,6 +36,7 @@ extern Color colorPink;
 extern Color colorCyan;
 extern Color colorPurple;
 extern Color colorWhite;
+extern Color transparentBlack80;
 
 void orthoMatrix(float left, float right, float bottom, float top, float near, float far, float* m);
 void translateMatrix(float x, float y, float* m);

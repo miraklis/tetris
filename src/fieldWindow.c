@@ -47,7 +47,7 @@ void updateFieldWindow(FieldWindow* f)
 }
 
 
-FieldWindow* createFieldWindow(int wx, int wy, int width, int height, bool filledBackground)
+FieldWindow* createFieldWindow(int wx, int wy, int width, int height, bool filledBackground, Color* backgroundColor)
 {
     FieldWindow* f = (FieldWindow*)malloc(sizeof(FieldWindow));
 
@@ -81,12 +81,12 @@ FieldWindow* createFieldWindow(int wx, int wy, int width, int height, bool fille
     float by = 0.0f;
     float bw = width * BLOCK_WIDTH;
     float bh = height * BLOCK_HEIGHT;
-    f->vertices[cnt++] = (Vertex){bx, by, colorBlack.r, colorBlack.g, colorBlack.b, colorBlack.a};
-    f->vertices[cnt++] = (Vertex){bx + bw, by, colorBlack.r, colorBlack.g, colorBlack.b, colorBlack.a};
-    f->vertices[cnt++] = (Vertex){bx, by + bh, colorBlack.r, colorBlack.g, colorBlack.b, colorBlack.a};
-    f->vertices[cnt++] = (Vertex){bx, by + bh, colorBlack.r, colorBlack.g, colorBlack.b, colorBlack.a};
-    f->vertices[cnt++] = (Vertex){bx + bw, by, colorBlack.r, colorBlack.g, colorBlack.b, colorBlack.a};
-    f->vertices[cnt++] = (Vertex){bx + bw, by + bh, colorBlack.r, colorBlack.g, colorBlack.b, colorBlack.a};
+    f->vertices[cnt++] = (Vertex){bx, by, backgroundColor->r, backgroundColor->g, backgroundColor->b, backgroundColor->a};
+    f->vertices[cnt++] = (Vertex){bx + bw, by, backgroundColor->r, backgroundColor->g, backgroundColor->b, backgroundColor->a};
+    f->vertices[cnt++] = (Vertex){bx, by + bh, backgroundColor->r, backgroundColor->g, backgroundColor->b, backgroundColor->a};
+    f->vertices[cnt++] = (Vertex){bx, by + bh, backgroundColor->r, backgroundColor->g, backgroundColor->b, backgroundColor->a};
+    f->vertices[cnt++] = (Vertex){bx + bw, by, backgroundColor->r, backgroundColor->g, backgroundColor->b, backgroundColor->a};
+    f->vertices[cnt++] = (Vertex){bx + bw, by + bh, backgroundColor->r, backgroundColor->g, backgroundColor->b, backgroundColor->a};
 
     unsigned int strParser = 0;
     size_t totalChars = width * height;

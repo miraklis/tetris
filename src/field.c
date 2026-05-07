@@ -33,10 +33,10 @@ static void createNewTetrominoes(PlayField* f)
 PlayField* createField(int wx, int wy, unsigned char playerNum, bool nextWindowPosToLeft)
 {
     PlayField* f = (PlayField*)malloc(sizeof(PlayField));
-    f->fieldWindow = createFieldWindow(wx, wy, FIELD_WIDTH, FIELD_HEIGHT, true);
+    f->fieldWindow = createFieldWindow(wx, wy, FIELD_WIDTH, FIELD_HEIGHT, true, &colorBlack);
     int nextWindowX = nextWindowPosToLeft ? (wx - 6) : (wx + FIELD_WIDTH);
-    f->nextPieceWindow = createFieldWindow(nextWindowX, wy, 6, 6, false);
-    f->infoWindow = createFieldWindow(wx, wy + FIELD_HEIGHT, FIELD_WIDTH, 6, false);
+    f->nextPieceWindow = createFieldWindow(nextWindowX, wy, 6, 6, false, &colorBlack);
+    f->infoWindow = createFieldWindow(wx, wy + FIELD_HEIGHT, FIELD_WIDTH, 6, false, &colorBlack);
     f->player = createPlayer(playerNum);
     f->player->playerState = PlayerState_Playing;
 
