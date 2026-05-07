@@ -2,6 +2,8 @@
 #include "std.h"
 #include "graphics.h"
 #include "shaders.h"
+#include <GLES3/gl3.h>
+#include <unistd.h>
 #include "fieldWindow.h"
 
 void updateFieldWindow(FieldWindow* f)
@@ -18,7 +20,7 @@ void updateFieldWindow(FieldWindow* f)
         Color borderColor = colorGray60;
         Color vertColor = f->layout[strParser] == '*' ? colorBlack : 
                         (f->layout[strParser] == '#' ? colorGray20 : 
-                        (f->layout[strParser] == '=' ? colorWhite :
+                        (f->layout[strParser] == '=' ? colorBlack :
                         (f->layout[strParser] == '0' ? colorRed :
                         (f->layout[strParser] == '1' ? colorBlue :
                         (f->layout[strParser] == '2' ? colorGreen :
@@ -31,13 +33,14 @@ void updateFieldWindow(FieldWindow* f)
             borderThickness = 0.5f;
             borderColor = colorGray10;
         }
+        float glow = f->layout[strParser] == '=' ?  1.0f : 0.0f;
         updateBlockVertices(
             f->vertices, 
             &cnt,
             ((int)(strParser % f->width) * BLOCK_WIDTH),
             ((int)(strParser / f->width) * BLOCK_HEIGHT),
             borderThickness,
-            &vertColor, &borderColor);
+            &vertColor, &borderColor, glow);
         strParser++;
     }
 
@@ -57,7 +60,6 @@ FieldWindow* createFieldWindow(int wx, int wy, int width, int height, bool fille
     f->height = height;
     f->rx = wx * BLOCK_WIDTH;
     f->ry = wy * BLOCK_HEIGHT;
-
 
     f->vertCount = filledBackground ? (width * height * 2) * 6 : (((width * 2) + ((height - 2) * 2)) * 2) * 6;
     f->vertCount += 6; // for the background
@@ -81,12 +83,12 @@ FieldWindow* createFieldWindow(int wx, int wy, int width, int height, bool fille
     float by = 0.0f;
     float bw = width * BLOCK_WIDTH;
     float bh = height * BLOCK_HEIGHT;
-    f->vertices[cnt++] = (Vertex){bx, by, backgroundColor->r, backgroundColor->g, backgroundColor->b, backgroundColor->a};
-    f->vertices[cnt++] = (Vertex){bx + bw, by, backgroundColor->r, backgroundColor->g, backgroundColor->b, backgroundColor->a};
-    f->vertices[cnt++] = (Vertex){bx, by + bh, backgroundColor->r, backgroundColor->g, backgroundColor->b, backgroundColor->a};
-    f->vertices[cnt++] = (Vertex){bx, by + bh, backgroundColor->r, backgroundColor->g, backgroundColor->b, backgroundColor->a};
-    f->vertices[cnt++] = (Vertex){bx + bw, by, backgroundColor->r, backgroundColor->g, backgroundColor->b, backgroundColor->a};
-    f->vertices[cnt++] = (Vertex){bx + bw, by + bh, backgroundColor->r, backgroundColor->g, backgroundColor->b, backgroundColor->a};
+    f->vertices[cnt++] = (Vertex){bx, by, backgroundColor->r, backgroundColor->g, backgroundColor->b, backgroundColor->a, 0.0f};
+    f->vertices[cnt++] = (Vertex){bx + bw, by, backgroundColor->r, backgroundColor->g, backgroundColor->b, backgroundColor->a, 0.0f};
+    f->vertices[cnt++] = (Vertex){bx, by + bh, backgroundColor->r, backgroundColor->g, backgroundColor->b, backgroundColor->a, 0.0f};
+    f->vertices[cnt++] = (Vertex){bx, by + bh, backgroundColor->r, backgroundColor->g, backgroundColor->b, backgroundColor->a, 0.0f};
+    f->vertices[cnt++] = (Vertex){bx + bw, by, backgroundColor->r, backgroundColor->g, backgroundColor->b, backgroundColor->a, 0.0f};
+    f->vertices[cnt++] = (Vertex){bx + bw, by + bh, backgroundColor->r, backgroundColor->g, backgroundColor->b, backgroundColor->a, 0.0f};
 
     unsigned int strParser = 0;
     size_t totalChars = width * height;
@@ -117,7 +119,7 @@ FieldWindow* createFieldWindow(int wx, int wy, int width, int height, bool fille
             ((int)(strParser % width) * BLOCK_WIDTH),
             ((int)(strParser / width) * BLOCK_HEIGHT),
             borderThickness,
-            &vertColor, &borderColor);
+            &vertColor, &borderColor, 0.0f);
         strParser++;
     }
 
@@ -129,6 +131,8 @@ FieldWindow* createFieldWindow(int wx, int wy, int width, int height, bool fille
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(2*sizeof(float)));
     glEnableVertexAttribArray(1);
+    glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(6*sizeof(float)));
+    glEnableVertexAttribArray(2);
     glBufferData(GL_ARRAY_BUFFER, f->vertCount * sizeof(Vertex), f->vertices, GL_DYNAMIC_DRAW);
     
     orthoMatrix(0, dm->w, dm->h, 0, -1, 1, f->proj);
@@ -141,6 +145,8 @@ void drawFieldWindow(FieldWindow *f, GameShader *shader) {
     useProgram(shader->program);
     glUniformMatrix4fv(shader->locProj, 1, GL_FALSE, f->proj);
     glUniformMatrix4fv(shader->locModel, 1, GL_FALSE, f->model);
+    float tm = SDL_GetTicks() / 200.0f;
+    glUniform1f(shader->locTime, tm);
     glBindVertexArray(f->vao);
     glDrawArrays(GL_TRIANGLES, 0, f->vertCount);
 }

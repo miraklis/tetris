@@ -57,8 +57,10 @@ PlayField* createField(int wx, int wy, unsigned char playerNum, bool nextWindowP
 
     f->lastTick = 0;
     f->lastStepTick = 0;
+    f->lastGlowTick = 0;
     f->piecesCnt = 0;
     f->pieceOnStack = false;
+    f->glowEffect = false;
 
     return f;
 }
@@ -168,6 +170,7 @@ int checkForFilledLines(PlayField* f, Tetrominoe* t)
             }
         }
     }
+    updateFieldWindow(f->fieldWindow);
     if(result == 4)
       result += 4;
     if(result == 3)
@@ -278,5 +281,5 @@ void addPieceOnStack(PlayField* f, Tetrominoe* t)
         y++;
     }
     f->piecesCnt++;
-    updateFieldWindow(f->fieldWindow);
+    //updateFieldWindow(f->fieldWindow);
 }

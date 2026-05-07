@@ -7,35 +7,38 @@ const char* default_VS =
 "#version 330 core\n"
 "layout (location = 0) in vec2 position;\n"
 "layout (location = 1) in vec4 color;\n"
+"layout (location = 2) in float glow;\n"
 "uniform mat4 proj;\n"
 "uniform mat4 model;\n"
 "out vec4 vColor;\n"
+"out float vGlow;\n"
 "void main()\n"
 "{\n"
 "    gl_Position = proj * model * vec4(position, 0.0, 1.0);\n"
 "    vColor = color;\n"
+"    vGlow = glow;\n"
 "}";
+
+// const char* default_FS = 
+// "#version 330 core\n"
+// "in vec4 vColor;\n"
+// "out vec4 FragColor;\n"
+// "void main()\n"
+// "{\n"
+// "    FragColor = vColor;\n"
+// "}";
 
 const char* default_FS = 
 "#version 330 core\n"
 "in vec4 vColor;\n"
+"in float vGlow;\n"
 "out vec4 FragColor;\n"
-"void main()\n"
-"{\n"
-"    FragColor = vColor;\n"
-"}";
-
-const char* glow_FS = 
-"#version 330 core\n"
-"in vec4 vColor;\n"
-"out vec4 FragColor;\n"
-"uniform float glow;\n"
 "uniform float time;\n"
 "void main()\n"
 "{\n"
 "    float pulse = sin(time * 8.0) * 0.5 + 0.5;\n"
-"    vec3 glowColor = vColor.rgb + vec3(glow * pulse);\n"
-"    FragColor = vec4(glowColor, 1.0);\n"
+"    vec3 glowColor = vColor.rgb + vec3(vGlow * pulse * 0.5);\n"
+"    FragColor = vec4(glowColor, vColor.a);\n"
 "}";
 
 const char* texture_VS = 
@@ -98,6 +101,7 @@ GameShader* createGameShader(void)
 
     shader->locProj = glGetUniformLocation(shader->program, "proj");
     shader->locModel = glGetUniformLocation(shader->program, "model");
+    shader->locTime = glGetUniformLocation(shader->program, "time");
 
     return shader;
 }

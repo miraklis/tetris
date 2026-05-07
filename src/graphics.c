@@ -66,25 +66,25 @@ void multiplyMatrix4x4(const float* a, const float* b, float* out)
     }
 }
 
-inline void updateBlockVertices(Vertex* vertices, int* count, float bx, float by, float borderThickness, const Color* blockColor, const Color* borderColor)
+inline void updateBlockVertices(Vertex* vertices, int* count, float bx, float by, float borderThickness, const Color* blockColor, const Color* borderColor, float glow)
 {
         float bw = BLOCK_WIDTH;
         float bh = BLOCK_HEIGHT;
         // Background block (used as border of the block)
-        vertices[(*count)++] = (Vertex){bx, by, borderColor->r, borderColor->g, borderColor->b, borderColor->a};
-        vertices[(*count)++] = (Vertex){bx + bw, by, borderColor->r, borderColor->g, borderColor->b, borderColor->a};
-        vertices[(*count)++] = (Vertex){bx, by + bh, borderColor->r, borderColor->g, borderColor->b, borderColor->a};
-        vertices[(*count)++] = (Vertex){bx, by + bh, borderColor->r, borderColor->g, borderColor->b, borderColor->a};
-        vertices[(*count)++] = (Vertex){bx + bw, by, borderColor->r, borderColor->g, borderColor->b, borderColor->a};
-        vertices[(*count)++] = (Vertex){bx + bw, by + bh, borderColor->r, borderColor->g, borderColor->b, borderColor->a};
+        vertices[(*count)++] = (Vertex){bx, by, borderColor->r, borderColor->g, borderColor->b, borderColor->a, 0.0f};
+        vertices[(*count)++] = (Vertex){bx + bw, by, borderColor->r, borderColor->g, borderColor->b, borderColor->a, 0.0f};
+        vertices[(*count)++] = (Vertex){bx, by + bh, borderColor->r, borderColor->g, borderColor->b, borderColor->a, 0.0f};
+        vertices[(*count)++] = (Vertex){bx, by + bh, borderColor->r, borderColor->g, borderColor->b, borderColor->a, 0.0f};
+        vertices[(*count)++] = (Vertex){bx + bw, by, borderColor->r, borderColor->g, borderColor->b, borderColor->a, 0.0f};
+        vertices[(*count)++] = (Vertex){bx + bw, by + bh, borderColor->r, borderColor->g, borderColor->b, borderColor->a, 0.0f};
         // Define border thickness
         bx += borderThickness; by += borderThickness;
         bw -= (borderThickness * 2.0f); bh -= (borderThickness * 2.0f);
         // Foreground Block
-        vertices[(*count)++] = (Vertex){bx, by, blockColor->r, blockColor->g, blockColor->b, blockColor->a};
-        vertices[(*count)++] = (Vertex){bx + bw, by, blockColor->r, blockColor->g, blockColor->b, blockColor->a};
-        vertices[(*count)++] = (Vertex){bx, by + bh, blockColor->r, blockColor->g, blockColor->b, blockColor->a};
-        vertices[(*count)++] = (Vertex){bx, by + bh, blockColor->r, blockColor->g, blockColor->b, blockColor->a};
-        vertices[(*count)++] = (Vertex){bx + bw, by, blockColor->r, blockColor->g, blockColor->b, blockColor->a};
-        vertices[(*count)++] = (Vertex){bx + bw, by + bh, blockColor->r, blockColor->g, blockColor->b, blockColor->a};
+        vertices[(*count)++] = (Vertex){bx, by, blockColor->r, blockColor->g, blockColor->b, blockColor->a, glow};
+        vertices[(*count)++] = (Vertex){bx + bw, by, blockColor->r, blockColor->g, blockColor->b, blockColor->a, glow};
+        vertices[(*count)++] = (Vertex){bx, by + bh, blockColor->r, blockColor->g, blockColor->b, blockColor->a, glow};
+        vertices[(*count)++] = (Vertex){bx, by + bh, blockColor->r, blockColor->g, blockColor->b, blockColor->a, glow};
+        vertices[(*count)++] = (Vertex){bx + bw, by, blockColor->r, blockColor->g, blockColor->b, blockColor->a, glow};
+        vertices[(*count)++] = (Vertex){bx + bw, by + bh, blockColor->r, blockColor->g, blockColor->b, blockColor->a, glow};
 }

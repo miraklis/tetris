@@ -16,6 +16,7 @@
 typedef struct sVertex {
     float x, y;
     float r, g, b, a;
+    float glow;
 } Vertex;
 
 typedef struct sColor {
@@ -43,6 +44,6 @@ void translateMatrix(float x, float y, float* m);
 void rotateMatrix(float angle, float* m);
 void multiplyMatrix4x4(const float* a, const float* b, float* out);
 
-void updateBlockVertices(Vertex* vertices, int* count, float bx, float by, float borderThickness, const Color* blockColor, const Color* borderColor);
+void updateBlockVertices(Vertex* vertices, int* count, float bx, float by, float borderThickness, const Color* blockColor, const Color* borderColor, float glow);
 
 #endif
