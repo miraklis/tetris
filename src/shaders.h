@@ -3,12 +3,6 @@
 
 #include "graphics.h"
 
-extern const char* default_VS;
-extern const char* default_FS;
-extern const char* glow_FS;
-extern const char* simple_textured_quad_VS;
-extern const char* simple_textured_quad_FS;
-
 typedef struct sGameShader {
     GLuint program;
     GLint locProj;

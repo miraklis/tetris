@@ -207,10 +207,8 @@ int main(int argc, char** argv)
     menu = createMenu("1 PLAYER GAME|2 PLAYER GAME|EXIT|", wWidth / 2.0f, wHeight / 5.0f, 24.0f);
 
     PlayField* field[MAX_PLAYERS];
-    //Player* player[MAX_PLAYERS];
     for(int i=0; i < MAX_PLAYERS; i++) {
         field[i] = NULL;
-        //player[i] = NULL;
     }
     
     size_t sbFontSize = 22.0f;
