@@ -6,8 +6,8 @@
 
 #define QUAD_VERTICES 6
 
-#define BLOCK_WIDTH 34
-#define BLOCK_HEIGHT 34
+// #define BLOCK_WIDTH 34
+// #define BLOCK_HEIGHT 34
 #define FIELD_WIDTH 12
 #define FIELD_HEIGHT 22
 
@@ -52,9 +52,24 @@ typedef struct sObject {
     float width, height;
     ObjectTypes id;
 } Object;
-
 extern ColorsPalette palette;
-extern const SDL_DisplayMode* dm;
+
+typedef struct sGraphics {
+    const SDL_DisplayMode* dm;
+    SDL_DisplayID* displays;
+    SDL_Window* window;
+    SDL_GLContext context;
+    float screenWidth;
+    float screenHeight;
+    uint32_t blockWidth;
+    uint32_t blockHeight;
+} Graphics;
+extern Graphics graphics;
+
+//extern const SDL_DisplayMode* dm;
+
+void initializeGraphics(void);
+void destroyGraphics(void);
 
 void orthoMatrix(float left, float right, float bottom, float top, float near, float far, float* m);
 void translateMatrix(float x, float y, float* m);

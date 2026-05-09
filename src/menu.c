@@ -135,7 +135,7 @@ Menu* createMenu(char* items, float x, float y, float fontSize)
     glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * 6, m->barVertices, GL_DYNAMIC_DRAW);
 
     // Projection and Model matrices
-    orthoMatrix(0, dm->w, dm->h, 0, -1, 1, m->proj);
+    orthoMatrix(0, graphics.screenWidth, graphics.screenHeight, 0, -1, 1, m->proj);
     translateMatrix(m->x, m->y, m->menuModel);
     translateMatrix(m->x, m->y, m->barModel);
 

@@ -2,36 +2,40 @@
 #include "std.h"
 #include "graphics.h"
 #include "shaders.h"
+#include <stdint.h>
 #include "window.h"
 
 Window* createWindow(int wx, int wy, int width, int height, Color* backgroundColor, bool hasBorder)
 {
     Window* f = (Window*)malloc(sizeof(Window));
 
+    uint32_t blockWidth = graphics.blockWidth;
+    uint32_t blockHeight = graphics.blockHeight;
+
     f->base.id = OBJ_TYPE_Window;
-    f->base.x = wx * BLOCK_WIDTH;
-    f->base.y = wy * BLOCK_HEIGHT;
-    f->base.width = width * BLOCK_WIDTH;
-    f->base.height = height * BLOCK_HEIGHT;
+    // f->base.x = wx * BLOCK_WIDTH;
+    // f->base.y = wy * BLOCK_HEIGHT;
+    // f->base.width = width * BLOCK_WIDTH;
+    // f->base.height = height * BLOCK_HEIGHT;
+    f->base.x = wx * blockWidth;
+    f->base.y = wy * blockHeight;
+    f->base.width = width * blockWidth;
+    f->base.height = height * blockHeight;
+
     f->wx = wx;
     f->wy = wy;
     f->width = width;
     f->height = height;
 
-    // f->rx = wx * BLOCK_WIDTH;
-    // f->ry = wy * BLOCK_HEIGHT;
-
-
     f->vertCount = hasBorder ? ((((width * 2) + ((height - 2) * 2)) * 2) * 6) + 6 : 6; // 6 for the background
-    //f->vertCount += 6; // for the background
     f->vertices = (Vertex*)malloc(sizeof(Vertex) * f->vertCount);
 
     int cnt = 0;
     // Background
     float bx = 0.0f;
     float by = 0.0f;
-    float bw = width * BLOCK_WIDTH;
-    float bh = height * BLOCK_HEIGHT;
+    float bw = width * blockWidth;
+    float bh = height * blockHeight;
     f->vertices[cnt++] = (Vertex){bx, by, backgroundColor->r, backgroundColor->g, backgroundColor->b, backgroundColor->a, 0.0f};
     f->vertices[cnt++] = (Vertex){bx + bw, by, backgroundColor->r, backgroundColor->g, backgroundColor->b, backgroundColor->a, 0.0f};
     f->vertices[cnt++] = (Vertex){bx, by + bh, backgroundColor->r, backgroundColor->g, backgroundColor->b, backgroundColor->a, 0.0f};
@@ -47,8 +51,8 @@ Window* createWindow(int wx, int wy, int width, int height, Color* backgroundCol
                         updateBlockVertices(
                             f->vertices, 
                             &cnt,
-                            (j * BLOCK_WIDTH),
-                            (i * BLOCK_HEIGHT),
+                            (j * blockWidth),
+                            (i * blockHeight),
                             1.0f,
                             &palette.colorGray20, &palette.colorGray60, 0.0f);
                     }
@@ -69,7 +73,7 @@ Window* createWindow(int wx, int wy, int width, int height, Color* backgroundCol
     glEnableVertexAttribArray(2);
     glBufferData(GL_ARRAY_BUFFER, f->vertCount * sizeof(Vertex), f->vertices, GL_DYNAMIC_DRAW);
     
-    orthoMatrix(0, dm->w, dm->h, 0, -1, 1, f->proj);
+    orthoMatrix(0, graphics.screenWidth, graphics.screenHeight, 0, -1, 1, f->proj);
     translateMatrix(f->base.x, f->base.y, f->model);
 
     return f;

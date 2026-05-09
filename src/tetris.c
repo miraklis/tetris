@@ -171,20 +171,24 @@ int main(int argc, char** argv)
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
-    int num_displays;
-    SDL_DisplayID *displays = SDL_GetDisplays(&num_displays);
-    dm = SDL_GetDesktopDisplayMode(displays[0]);
-    
-    SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl");
-    float wWidth = dm->w;
-    float wHeight = dm->h;
-    SDL_Window* window= SDL_CreateWindow("Tetris", wWidth, wHeight, SDL_WINDOW_OPENGL | SDL_WINDOW_FULLSCREEN);
-    SDL_GLContext context = SDL_GL_CreateContext(window);
-    SDL_GL_SetSwapInterval(1);
-    glViewport(0, 0, wWidth, wHeight);
+    initializeGraphics();
+    float screenWidth = graphics.dm->w;
+    float screenHeight = graphics.dm->h;
 
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);    
+    // int num_displays;
+    // SDL_DisplayID *displays = SDL_GetDisplays(&num_displays);
+    // dm = SDL_GetDesktopDisplayMode(displays[0]);
+    
+    // SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl");
+    // float wWidth = dm->w;
+    // float wHeight = dm->h;
+    // SDL_Window* window= SDL_CreateWindow("Tetris", wWidth, wHeight, SDL_WINDOW_OPENGL | SDL_WINDOW_FULLSCREEN);
+    // SDL_GLContext context = SDL_GL_CreateContext(window);
+    // SDL_GL_SetSwapInterval(1);
+    // glViewport(0, 0, wWidth, wHeight);
+
+    // glEnable(GL_BLEND);
+    // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);    
 
     srand(time(NULL));
 
@@ -202,14 +206,14 @@ int main(int argc, char** argv)
     Game game;
     game.gameState = game.lastState = GameState_InMenu;
     game.running = true;
-    game.labelStatusMessage = createText("GAME OVER !!!", FONT, 44.0f, wWidth / 2.0f - (6 * 48.0f), 48.0f);
+    game.labelStatusMessage = createText("GAME OVER !!!", FONT, 44.0f, screenWidth / 2.0f - (6 * 48.0f), 48.0f);
     setTextColor(game.labelStatusMessage, palette.colorRed);
     game.labelStatusMessage->visible = false;
 
     Image* splash_screen = loadImage("assets/splash_screen.jpg");
 
     Menu* menu;
-    menu = createMenu("1 PLAYER GAME|2 PLAYER GAME|EXIT|", wWidth / 2.0f, wHeight / 5.0f, 24.0f);
+    menu = createMenu("1 PLAYER GAME|2 PLAYER GAME|EXIT|", screenWidth / 2.0f, screenHeight / 5.0f, 24.0f);
 
     PlayField* field[MAX_PLAYERS];
     for(int i=0; i < MAX_PLAYERS; i++) {
@@ -274,7 +278,7 @@ int main(int argc, char** argv)
         // Start 2 Player game
         if(menu->action == 2) { // 2 player game
             freeGameObjects(field);
-            field[0] = createField((int)(dm->w / BLOCK_WIDTH) - FIELD_WIDTH - 1, 0, 1, true);
+            field[0] = createField((int)(screenWidth / graphics.blockWidth) - FIELD_WIDTH - 1, 0, 1, true);
             field[1] = createField(1, 0, 2, false);
             game.gameState = GameState_Playing;
             menu->visible = false;
@@ -422,7 +426,7 @@ int main(int argc, char** argv)
         drawScoreBoard(scoreBoard, gameShader, coloredTextureShader);
         drawMenu(menu, gameShader, coloredTextureShader);
 
-        SDL_GL_SwapWindow(window);
+        SDL_GL_SwapWindow(graphics.window);
 
         // Calcuation for fixed FPS
         unsigned long frameTime = SDL_GetTicks() - frameStart;
@@ -431,7 +435,7 @@ int main(int argc, char** argv)
         }
     }
 
-    // Free GameObjects
+    // Cleanup
     freeGameObjects(field);
     destroyScoreBoard(scoreBoard);
     destroyText(game.labelStatusMessage);
@@ -441,12 +445,12 @@ int main(int argc, char** argv)
     destroyTextureShader(textureShader);
     destroyColoredTextureShader(coloredTextureShader);
     destroyFontCache();
+    destroyGraphics();
 
-    // Cleanup
-    SDL_GL_DestroyContext(context);
-    SDL_DestroyWindow(window);
-    SDL_free(displays);
-    SDL_Quit();
+    // SDL_GL_DestroyContext(context);
+    // SDL_DestroyWindow(window);
+    // SDL_free(displays);
+    // SDL_Quit();
 
     return 0;
 }

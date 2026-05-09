@@ -5,7 +5,6 @@
     #define M_PI 3.14159265358979323846
 #endif
 
-
 ColorsPalette palette = {
     .colorBlack =           {0.0f, 0.0f, 0.0f, 1.0f},
     .colorGray10 =          {0.1f, 0.1f, 0.1f, 1.0f},
@@ -21,7 +20,41 @@ ColorsPalette palette = {
     .colorWhite =           {1.0f, 1.0f, 1.0f, 1.0f},
     .transparentBlack80 =   {0.0f, 0.0f, 0.0f, 0.8f}
 };
-const SDL_DisplayMode* dm;
+
+Graphics graphics;
+
+void initializeGraphics(void)
+{
+    int num_displays;
+    graphics.displays = SDL_GetDisplays(&num_displays);
+    graphics.dm = SDL_GetDesktopDisplayMode(graphics.displays[0]);
+    
+    SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl");
+    graphics.screenWidth = graphics.dm->w;
+    graphics.screenHeight = graphics.dm->h;
+    graphics.window = SDL_CreateWindow("Tetris", graphics.screenWidth, graphics.screenHeight, SDL_WINDOW_OPENGL | SDL_WINDOW_FULLSCREEN);
+    graphics.context = SDL_GL_CreateContext(graphics.window);
+    SDL_GL_SetSwapInterval(1);
+    glViewport(0, 0, graphics.screenWidth, graphics.screenHeight);
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);    
+
+    float ratio = graphics.screenWidth / graphics.screenHeight;
+    graphics.blockWidth = (uint32_t)(graphics.screenWidth / 56.0f);
+    graphics.blockHeight = (uint32_t)((graphics.screenHeight / 56.0f) * ratio);
+
+    printf("Screen: %dx%d, Block: %dx%d\n", (int)graphics.screenWidth, (int)graphics.screenHeight, graphics.blockWidth, graphics.blockHeight);
+
+}
+
+void destroyGraphics(void)
+{
+    SDL_GL_DestroyContext(graphics.context);
+    SDL_DestroyWindow(graphics.window);
+    SDL_free(graphics.displays);
+    SDL_Quit();
+}
 
 void orthoMatrix(float left, float right, float bottom, float top, float near, float far, float* m)
 {
@@ -70,8 +103,8 @@ void multiplyMatrix4x4(const float* a, const float* b, float* out)
 
 inline void updateBlockVertices(Vertex* vertices, int* count, float bx, float by, float borderThickness, const Color* blockColor, const Color* borderColor, float glow)
 {
-        float bw = BLOCK_WIDTH;
-        float bh = BLOCK_HEIGHT;
+        float bw = graphics.blockWidth;
+        float bh = graphics.blockHeight;
         // Background block (used as border of the block)
         vertices[(*count)++] = (Vertex){bx, by, borderColor->r, borderColor->g, borderColor->b, borderColor->a, 0.0f};
         vertices[(*count)++] = (Vertex){bx + bw, by, borderColor->r, borderColor->g, borderColor->b, borderColor->a, 0.0f};

@@ -94,7 +94,7 @@ Text* createText(char* str, char* fontName, float fontSize, float x, float y)
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(1,2,GL_FLOAT,GL_FALSE,sizeof(GlyphVertex),(void*)(2*sizeof(float)));
     glEnableVertexAttribArray(1);
-    orthoMatrix(0, dm->w, dm->h, 0, -1, 1, t->proj);
+    orthoMatrix(0, graphics.screenWidth, graphics.screenHeight, 0, -1, 1, t->proj);
     translateMatrix(x, y, t->model);
     t->color = palette.colorWhite;
     t->visible = true;

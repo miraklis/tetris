@@ -1,13 +1,9 @@
-//#include "fieldWindow.h"
 #include "std.h"
 #include "graphics.h"
 #include "shaders.h"
 #include "window.h"
 #include "tetrominoe.h"
-//#include <GLES3/gl3.h>
-//#include <string.h>
 #include "player.h"
-//#include <stdbool.h>
 #include "arena.h"
 #include "playfield.h"
 
@@ -17,6 +13,9 @@ static const int startPosY = 0;
 PlayField* createField(int wx, int wy, unsigned char playerNum, bool nextWindowPosToLeft)
 {
     PlayField* f = (PlayField*)malloc(sizeof(PlayField));
+
+    uint32_t blockWidth = graphics.blockWidth;
+    uint32_t blockHeight = graphics.blockHeight;
 
     // Create the windows and the arena
     f->playWindow = createWindow(wx, wy, FIELD_WIDTH, FIELD_HEIGHT, &palette.colorBlack, false);
@@ -28,8 +27,8 @@ PlayField* createField(int wx, int wy, unsigned char playerNum, bool nextWindowP
     f->arena = createArena(wx, wy, FIELD_WIDTH, FIELD_HEIGHT);
 
     // Create the score and status texts
-    float paddingX = BLOCK_WIDTH;
-    float paddingY = BLOCK_HEIGHT;
+    float paddingX = blockWidth;
+    float paddingY = blockHeight;
     const float fontSize = 22.0f;
     f->scoreText = createText("Score :     0", FONT, fontSize, 0.0f, 0.0f);
     addObjectToWindow(f->infoWindow, (Object*)f->scoreText);

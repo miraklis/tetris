@@ -33,8 +33,8 @@ Image* loadImage(char* path)
     image->y = 0.0f;
     const float x = image->x;
     const float y = image->y;
-    const float w = dm->w;
-    const float h = dm->h;
+    const float w = graphics.screenWidth;
+    const float h = graphics.screenHeight;
 
     float vertices[] = {
         // Positions (x, y, z)      // Texture coords (u, v)
@@ -58,7 +58,7 @@ Image* loadImage(char* path)
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
 
-    orthoMatrix(0, dm->w, 0, dm->h, -1, 1, image->proj);
+    orthoMatrix(0, graphics.screenWidth, 0, graphics.screenHeight, -1, 1, image->proj);
     translateMatrix(image->x, image->y, image->model);
     image->visible = true;
 

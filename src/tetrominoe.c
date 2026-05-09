@@ -6,11 +6,14 @@
 
 static void updateModelMatrix(Tetrominoe* t)
 {
+    uint32_t blockWidth = graphics.blockWidth;
+    uint32_t blockHeight = graphics.blockHeight;
+
     float translation[16];
     float rotation[16];
     translateMatrix(
-        t->base.x + ((t->wx + t->centerOffsetX) * BLOCK_WIDTH),
-        t->base.y + ((t->wy + t->centerOffsetY) * BLOCK_HEIGHT),
+        t->base.x + ((t->wx + t->centerOffsetX) * blockWidth),
+        t->base.y + ((t->wy + t->centerOffsetY) * blockHeight),
         translation
     );
     rotateMatrix(t->rotationState * 90.0f, rotation);
@@ -21,11 +24,14 @@ Tetrominoe* createTetrominoe(TetrominoeType type)
 {
     Tetrominoe* t = (Tetrominoe*)malloc(sizeof(Tetrominoe));
 
+    uint32_t blockWidth = graphics.blockWidth;
+    uint32_t blockHeight = graphics.blockHeight;
+
     t->base.id = OBJ_TYPE_Tetrominoe;
     t->base.x = 0.0f;
     t->base.y = 0.0f;
-    t->base.width = 4 * BLOCK_WIDTH;
-    t->base.height = 4 * BLOCK_HEIGHT;
+    t->base.width = 4 * blockWidth;
+    t->base.height = 4 * blockHeight;
     t->type = type;
     t->isAlive = false;
     t->wx = 0;
@@ -111,8 +117,8 @@ Tetrominoe* createTetrominoe(TetrominoeType type)
             updateBlockVertices(
                 t->vertices, 
                 &vertCnt,
-                ((int)(strParser % 4) - t->centerOffsetX) * BLOCK_WIDTH,
-                ((int)(strParser / 4) - t->centerOffsetY) * BLOCK_HEIGHT,
+                ((int)(strParser % 4) - t->centerOffsetX) * blockWidth,
+                ((int)(strParser / 4) - t->centerOffsetY) * blockHeight,
                 borderThickness,
                 &t->color, &wc, 0.0f);
             // Get next character
@@ -134,7 +140,7 @@ Tetrominoe* createTetrominoe(TetrominoeType type)
     glBufferData(GL_ARRAY_BUFFER, TETROMINOE_VERTICES_COUNT * sizeof(Vertex), t->vertices, GL_DYNAMIC_DRAW);
 
     // Update uniforms proj and model
-    orthoMatrix(0, dm->w, dm->h, 0, -1, 1, t->proj);
+    orthoMatrix(0, graphics.screenWidth, graphics.screenHeight, 0, -1, 1, t->proj);
     updateModelMatrix(t);
 
     return t;

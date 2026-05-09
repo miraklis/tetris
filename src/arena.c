@@ -8,7 +8,10 @@ void updateArena(Arena* f)
     unsigned int strParser = 0;
     int cnt = 0;
     size_t totalChars = f->width * f->height;
-    
+
+    uint32_t blockWidth = graphics.blockWidth;
+    uint32_t blockHeight = graphics.blockHeight;    
+
     while(strParser < totalChars) {
         Color borderColor = palette.colorGray60;
         Color vertColor = f->layout[strParser] == '*' ? palette.colorBlack : 
@@ -30,8 +33,8 @@ void updateArena(Arena* f)
         updateBlockVertices(
             f->vertices, 
             &cnt,
-            ((int)(strParser % f->width) * BLOCK_WIDTH),
-            ((int)(strParser / f->width) * BLOCK_HEIGHT),
+            ((int)(strParser % f->width) * blockWidth),
+            ((int)(strParser / f->width) * blockHeight),
             borderThickness,
             &vertColor, &borderColor, glow);
         strParser++;
@@ -47,11 +50,14 @@ Arena* createArena(int wx, int wy, int width, int height)
 {
     Arena* f = (Arena*)malloc(sizeof(Arena));
 
+    uint32_t blockWidth = graphics.blockWidth;
+    uint32_t blockHeight = graphics.blockHeight;     
+
     f->base.id = OBJ_TYPE_Arena;
-    f->base.x = wx * BLOCK_WIDTH;
-    f->base.y = wy * BLOCK_HEIGHT;
-    f->base.width = width * BLOCK_WIDTH;
-    f->base.height = height * BLOCK_HEIGHT;
+    f->base.x = wx * blockWidth;
+    f->base.y = wy * blockHeight;
+    f->base.width = width * blockWidth;
+    f->base.height = height * blockHeight;
     f->wx = wx;
     f->wy = wy;
     f->width = width;
@@ -94,8 +100,8 @@ Arena* createArena(int wx, int wy, int width, int height)
         updateBlockVertices(
             f->vertices, 
             &cnt,
-            ((int)(strParser % width) * BLOCK_WIDTH),
-            ((int)(strParser / width) * BLOCK_HEIGHT),
+            ((int)(strParser % width) * blockWidth),
+            ((int)(strParser / width) * blockHeight),
             borderThickness,
             &vertColor, &borderColor, 0.0f);
         strParser++;
@@ -113,7 +119,7 @@ Arena* createArena(int wx, int wy, int width, int height)
     glEnableVertexAttribArray(2);
     glBufferData(GL_ARRAY_BUFFER, f->vertCount * sizeof(Vertex), f->vertices, GL_DYNAMIC_DRAW);
     
-    orthoMatrix(0, dm->w, dm->h, 0, -1, 1, f->proj);
+    orthoMatrix(0, graphics.screenWidth, graphics.screenHeight, 0, -1, 1, f->proj);
     translateMatrix(f->base.x, f->base.y, f->model);
 
     return f;
