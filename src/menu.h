@@ -20,7 +20,9 @@ typedef struct {
     Text** items;
 
     GLuint backVao;
+    GLuint backVbo;
     GLuint barVao;
+    GLuint barVbo;
     float proj[16];
     float menuModel[16];
     float barModel[16];

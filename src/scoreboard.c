@@ -134,6 +134,4 @@ void destroyScoreBoard(ScoreBoard* sb)
         }
     }
     FREE(sb);
-    // free(sb);
-    // sb = NULL;
 }

@@ -9,7 +9,7 @@
 Image* loadImage(char* path)
 {
     Image* image = (Image*)malloc(sizeof(Image));
-    image->data = stbi_load("assets/splash_screen.jpg", &image->width, &image->height, &image->channels, 0);
+    image->data = stbi_load(path, &image->width, &image->height, &image->channels, 0);
     if (!image->data) {
         const char* error = stbi_failure_reason();
         printf("Failed to load image: %s\n", error);

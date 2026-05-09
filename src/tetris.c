@@ -10,6 +10,7 @@
 #include "menu.h"
 #include "image.h"
 #include "scoreboard.h"
+#include <SDL3/SDL_video.h>
 
 #define TARGET_FPS 60
 #define FRAME_DELAY (1000 / TARGET_FPS)
@@ -42,6 +43,8 @@ void freeGameObjects(PlayField* field[MAX_PLAYERS])
             destroyText(field[i]->statusText);
             destroyTetrominoe(field[i]->currentPiece);
             destroyTetrominoe(field[i]->nextPiece);
+            destroyFieldWindow(field[i]->nextPieceWindow);
+            destroyFieldWindow(field[i]->infoWindow);
             destroyFieldWindow(field[i]->fieldWindow);
             FREE(field[i]->player);
             FREE(field[i]);
@@ -202,7 +205,7 @@ int main(int argc, char** argv)
     setTextColor(game.labelStatusMessage, colorRed);
     game.labelStatusMessage->visible = false;
 
-    Image* splash_screen = loadImage("assets/splash_screen.webp");
+    Image* splash_screen = loadImage("assets/splash_screen.jpg");
 
     Menu* menu;
     menu = createMenu("1 PLAYER GAME|2 PLAYER GAME|EXIT|", wWidth / 2.0f, wHeight / 5.0f, 24.0f);

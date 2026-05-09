@@ -160,8 +160,4 @@ void destroyFieldWindow(FieldWindow* f)
     FREE(f->vertices);
     FREE(f->layout);
     FREE(f);
-    // free(f->vertices);
-    // free(f->layout);
-    // free(f);
-    // f=NULL;
 }

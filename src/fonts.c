@@ -82,6 +82,7 @@ Font* loadFont(char fontName[256], float fontSize)
     unsigned char* fontData = loadTTFFont(fontName);
     unsigned char bitmap[512*512];
     stbtt_BakeFontBitmap(fontData, 0, font->fontSize, bitmap, 512, 512, 32, 96, font->cdata);
+    FREE(fontData);
     font->texture = loadTTFTexture(bitmap);
     fontCache.fonts[fontCache.count++] = font;
     return font;
