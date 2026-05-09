@@ -41,6 +41,7 @@ void moveTetrominoe(int x, int y, Tetrominoe* t);
 void placeTetrominoe(int x, int y, Tetrominoe* t);
 void rotateLayout(char* layout);
 void rotateTetrominoe(Tetrominoe* t);
-void drawTetrominoe(Tetrominoe* t, GameShader* shader);//GLint program);
+void drawTetrominoe(Tetrominoe* t, GameShader* shader);
+void destroyTetrominoe(Tetrominoe* t);
 
 #endif // TETROMINOE_H

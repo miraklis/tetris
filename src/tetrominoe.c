@@ -179,3 +179,14 @@ void rotateLayout(char layout[17]) {
             layout[(i * 4) + j] = s[12 + i - (j * 4)]; // rotate 90 degrees CW
             //(*layout)[(i * 4) + j] = s[(15 - i) - ((3 - j) * 4)]; // rotate 90 degrees CCW
 }
+
+void destroyTetrominoe(Tetrominoe* t)
+{
+    if(t==NULL)
+        return;
+    glDeleteVertexArrays(1, &t->vao);
+    glDeleteBuffers(1, &t->vbo);
+    FREE(t);
+    // free(t);
+    // t=NULL;
+}

@@ -189,3 +189,17 @@ void drawMenu(Menu* menu, GameShader* gameShader, ColoredTextureShader* uiShader
     }
 
 }
+
+void destroyMenu(Menu* menu)
+{
+    if(menu == NULL)
+        return;
+
+    glDeleteVertexArrays(1, &menu->backVao);
+    glDeleteVertexArrays(1, &menu->barVao);
+    for(int i = 0; i < menu->itemsCnt; i++) {
+        destroyText(menu->items[i]);
+    }
+    FREE(menu->items);
+    FREE(menu);
+}

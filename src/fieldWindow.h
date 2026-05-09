@@ -21,5 +21,6 @@ typedef struct sFieldWindow {
 FieldWindow* createFieldWindow(int wx, int wy, int width, int height, bool filledBackground, Color* backgroundColor);
 void updateFieldWindow(FieldWindow* f);
 void drawFieldWindow(FieldWindow* f, GameShader* shader);
+void destroyFieldWindow(FieldWindow* f);
 
 #endif // FIELD_WINDOW_H

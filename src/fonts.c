@@ -1,4 +1,6 @@
 #include "std.h"
+#include <stdio.h>
+#include <string.h>
 #include "fonts.h"
 
 #define STB_TRUETYPE_IMPLEMENTATION
@@ -48,11 +50,11 @@ static GLuint loadTTFTexture(unsigned char bitmap[512*512])
     return tex;
 }
 
-static int checkExists(char* fontName, float fontSize)
+static int checkExists(char fontName[256], float fontSize)
 {
     for(int i=0; i < fontCache.count; i++) {
         if(fontCache.fonts[i] != NULL 
-            && strcmp((char*)fontCache.fonts[i]->fontName, fontName) == 0 
+            && strcmp(fontCache.fonts[i]->fontName, fontName) == 0 
             && fontCache.fonts[i]->fontSize == fontSize) {
                 return i;
         }
@@ -60,7 +62,7 @@ static int checkExists(char* fontName, float fontSize)
     return -1;
 }
 
-Font* loadFont(char* fontName, float fontSize)
+Font* loadFont(char fontName[256], float fontSize)
 {
     // Check if the font exists in cache
     int idx = checkExists(fontName, fontSize);
@@ -74,7 +76,8 @@ Font* loadFont(char* fontName, float fontSize)
     }
     // Load new font and add to cache
     Font* font = (Font*)malloc(sizeof(Font));
-    font->fontName = fontName;
+    memset(font->fontName, 0, 256);
+    sprintf(font->fontName, "%s", fontName);
     font->fontSize = fontSize;
     unsigned char* fontData = loadTTFFont(fontName);
     unsigned char bitmap[512*512];
@@ -89,8 +92,7 @@ static void destroyFont(Font* font)
     if(font == NULL)
         return;
     glDeleteTextures(1, &font->texture);
-    free(font->fontName);
-    free(font);
+    FREE(font);
 }
 
 void destroyFontCache(void)
@@ -98,7 +100,6 @@ void destroyFontCache(void)
     for(int i=0; i < fontCache.count; i++) {
         if(fontCache.fonts[i] != NULL) {
             destroyFont(fontCache.fonts[i]);
-            fontCache.fonts[i] = NULL;
         }
     }
     fontCache.count = 0;

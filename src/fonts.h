@@ -7,7 +7,7 @@
 #define MAX_FONTS_CACHE 16
 
 typedef struct sFont {
-    char* fontName;
+    char fontName[256];
     float fontSize;
     stbtt_bakedchar cdata[96];
     unsigned int texture;

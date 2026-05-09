@@ -20,5 +20,6 @@ typedef struct sScoreBoard {
 ScoreBoard* createScoreBoard(int wx, int wy, float fontSize);
 void addScore(ScoreBoard* sb, int score);
 void drawScoreBoard(ScoreBoard* sb,  GameShader* gameShader, ColoredTextureShader* coloredTextureShader);
+void destroyScoreBoard(ScoreBoard* sb);
 
 #endif

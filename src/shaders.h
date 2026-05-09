@@ -32,4 +32,8 @@ ColoredTextureShader* createColoredTextureShader(void);
 
 void useProgram(GLuint shader);
 
+void destroyGameShader(GameShader* shader);
+void destroyTextureShader(TextureShader* shader);
+void destroyColoredTextureShader(ColoredTextureShader* shader);
+
 #endif
