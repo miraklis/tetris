@@ -121,3 +121,17 @@ void drawScoreBoard(ScoreBoard* sb, GameShader* gameShader, ColoredTextureShader
         }
     }
 }
+
+void destroyScoreBoard(ScoreBoard* sb)
+{
+    if(sb == NULL)
+        return;
+
+    destroyFieldWindow(sb->window);
+    for(int i = 0; i < MAX_SCORES; i++) {
+        if(sb->items[i] != NULL) {
+            destroyText(sb->items[i]);
+        }
+    }
+    FREE(sb);
+}

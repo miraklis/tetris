@@ -158,3 +158,17 @@ void useProgram(GLuint program) {
     }
 }
 
+void destroyGameShader(GameShader* shader) {
+    glDeleteProgram(shader->program);
+    FREE(shader);
+}
+
+void destroyTextureShader(TextureShader* shader) {
+    glDeleteProgram(shader->program);
+    FREE(shader);
+}
+
+void destroyColoredTextureShader(ColoredTextureShader* shader) {
+    glDeleteProgram(shader->program);
+    FREE(shader);
+}

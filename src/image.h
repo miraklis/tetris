@@ -23,5 +23,6 @@ typedef struct sImage {
 Image* loadImage(char* path);
 void moveImage(Image* img, float x, float y);
 void drawImage(Image* img, TextureShader* shader);
+void destroyImage(Image* img);
 
 #endif // IMAGE_H

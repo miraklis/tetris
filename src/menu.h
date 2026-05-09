@@ -15,15 +15,14 @@ typedef struct {
     int action;
     bool visible;
     size_t itemsCnt;
-    //Vertex vertices[12];
     Vertex backgroundVertices[6];
     Vertex barVertices[6];
     Text** items;
 
     GLuint backVao;
+    GLuint backVbo;
     GLuint barVao;
-    // GLuint backVbo;
-    // GLuint barVbo;
+    GLuint barVbo;
     float proj[16];
     float menuModel[16];
     float barModel[16];
@@ -31,6 +30,7 @@ typedef struct {
 
 Menu* createMenu(char* items, float x, float y, float fontSize);
 void handleMenuInput(const bool* currentKeyStates, Menu* menu);
-void drawMenu(Menu* menu, GameShader* gameShader, ColoredTextureShader* uiShader);//GLuint program);
+void drawMenu(Menu* menu, GameShader* gameShader, ColoredTextureShader* uiShader);
+void destroyMenu(Menu* menu);
 
 #endif

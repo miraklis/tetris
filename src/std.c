@@ -6,3 +6,11 @@ size_t slength(const char* s, size_t maxlen)
     for(; it < s + maxlen && *it != '\0'; it++);
     return it - s;
 }
+
+// void deallocPtr(void* ptr)
+// {
+//     if(ptr != NULL) {
+//         free(ptr);
+//         ptr = NULL;
+//     }
+// }

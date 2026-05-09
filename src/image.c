@@ -9,11 +9,12 @@
 Image* loadImage(char* path)
 {
     Image* image = (Image*)malloc(sizeof(Image));
-    image->data = stbi_load("assets/splash_screen.jpg", &image->width, &image->height, &image->channels, 0);
+    image->data = stbi_load(path, &image->width, &image->height, &image->channels, 0);
     if (!image->data) {
         const char* error = stbi_failure_reason();
         printf("Failed to load image: %s\n", error);
-        free(image);
+        //free(image);
+        FREE(image);
         return NULL;
     }
 
@@ -84,4 +85,18 @@ void drawImage(Image* img, TextureShader* shader)
     glActiveTexture(GL_TEXTURE0);
     glUniform1i(shader->locTexture, 0);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+}
+
+void destroyImage(Image* img)
+{
+    if(img==NULL)
+        return;
+    glDeleteVertexArrays(1, &img->vao);
+    glDeleteBuffers(1, &img->vbo);
+    glDeleteBuffers(1, &img->ebo);
+    glDeleteTextures(1, &img->textureID);
+    stbi_image_free(img->data);
+    FREE(img);
+    // free(img);
+    // img=NULL;
 }

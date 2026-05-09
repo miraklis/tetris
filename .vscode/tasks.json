@@ -14,12 +14,18 @@
         {
             "label": "Build Release",
             "type": "shell",
-            "command": "clang -std=c11 -O3 src/*.c -U DEBUG -o Release/tetris -lc -lSDL3 -lm -lOpenGL",
+            "command": "clang -std=c11 -O3 src/*.c -o Release/tetris -lc -lSDL3 -lm -lOpenGL",
             "problemMatcher": [],
             "group": {
                 "kind": "build",
                 "isDefault": false
             }
+        },
+        {
+            "label": "Build ASAN",
+            "type": "shell",
+            "command": "clang -std=c11 src/*.c -g -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer -o Debug/tetris_asan -lc -lSDL3 -lm -lOpenGL",
+            "problemMatcher": []
         }        
     ]
 }

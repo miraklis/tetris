@@ -2,6 +2,7 @@
 #include "graphics.h"
 #include "shaders.h"
 #include "text.h"
+#include <GLES3/gl3.h>
 #include "menu.h"
 
 void selectItem(Menu* menu, int itemIndex)
@@ -109,13 +110,13 @@ Menu* createMenu(char* items, float x, float y, float fontSize)
     m->barVertices[4] = (Vertex){ mx + menuWidth, selectedItemY, 0.3f, 0.3f, 0.3f, 1.0f};
     m->barVertices[5] = (Vertex){ mx, selectedItemY, 0.3f, 0.3f, 0.3f, 1.0f};
 
-    GLuint vbo;
+    //GLuint vbo;
 
     // Background VAO and VBO
     glGenVertexArrays(1, &m->backVao);
-    glGenBuffers(1, &vbo);
+    glGenBuffers(1, &m->backVbo);
     glBindVertexArray(m->backVao);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, m->backVbo);
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(2*sizeof(float)));
@@ -124,9 +125,9 @@ Menu* createMenu(char* items, float x, float y, float fontSize)
 
     // Bar VAO and VBO
     glGenVertexArrays(1, &m->barVao);
-    glGenBuffers(1, &vbo);
+    glGenBuffers(1, &m->barVbo);
     glBindVertexArray(m->barVao);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, m->barVbo);
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(2*sizeof(float)));
@@ -188,4 +189,19 @@ void drawMenu(Menu* menu, GameShader* gameShader, ColoredTextureShader* uiShader
         drawText(menu->items[i], uiShader);
     }
 
+}
+
+void destroyMenu(Menu* menu)
+{
+    if(menu == NULL)
+        return;
+    glDeleteVertexArrays(1, &menu->backVao);
+    glDeleteBuffers(1, &menu->backVbo);
+    glDeleteVertexArrays(1, &menu->barVao);
+    glDeleteBuffers(1, &menu->barVbo);
+    for(int i = 0; i < menu->itemsCnt; i++) {
+        destroyText(menu->items[i]);
+    }
+    FREE(menu->items);
+    FREE(menu);
 }

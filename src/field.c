@@ -69,7 +69,8 @@ void getNextTetrominoe(PlayField* f)
 {
     int prevX = f->nextPiece->wx;
     int prevY = f->nextPiece->wy;
-    free(f->currentPiece);
+    //free(f->currentPiece);
+    destroyTetrominoe(f->currentPiece);
     f->currentPiece = f->nextPiece;
     attachTetrominoeToWindow(f->fieldWindow, f->currentPiece);
     f->currentPiece->isAlive = true;

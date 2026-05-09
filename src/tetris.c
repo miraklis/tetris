@@ -1,3 +1,5 @@
+#include "fieldWindow.h"
+#include "fonts.h"
 #include "std.h"
 #include "graphics.h"
 #include "shaders.h"
@@ -8,6 +10,7 @@
 #include "menu.h"
 #include "image.h"
 #include "scoreboard.h"
+#include <SDL3/SDL_video.h>
 
 #define TARGET_FPS 60
 #define FRAME_DELAY (1000 / TARGET_FPS)
@@ -36,14 +39,15 @@ void freeGameObjects(PlayField* field[MAX_PLAYERS])
 {
     for(int i=0; i < MAX_PLAYERS; i++) {
         if(field[i] != NULL) {
-            free(field[i]->scoreText);
-            free(field[i]->statusText);
-            free(field[i]->player);
-            free(field[i]->currentPiece);
-            free(field[i]->nextPiece);
-            free(field[i]->fieldWindow);
-            free(field[i]);
-            field[i] = NULL;
+            destroyText(field[i]->scoreText);
+            destroyText(field[i]->statusText);
+            destroyTetrominoe(field[i]->currentPiece);
+            destroyTetrominoe(field[i]->nextPiece);
+            destroyFieldWindow(field[i]->nextPieceWindow);
+            destroyFieldWindow(field[i]->infoWindow);
+            destroyFieldWindow(field[i]->fieldWindow);
+            FREE(field[i]->player);
+            FREE(field[i]);
         }
     }
 }
@@ -51,7 +55,7 @@ void freeGameObjects(PlayField* field[MAX_PLAYERS])
 void readInput(const bool* currentKeyStates, bool keyPress[11])
 {
     static bool previousKeyStates[SDL_SCANCODE_COUNT] = {0};
-    static unsigned long repeatDelay[11];// = {SDL_GetTicks()};
+    static unsigned long repeatDelay[11];
 
     // Escape (show menu)
     if(currentKeyStates[SDL_SCANCODE_ESCAPE] && !previousKeyStates[SDL_SCANCODE_ESCAPE]) {
@@ -175,7 +179,7 @@ int main(int argc, char** argv)
     float wHeight = dm->h;
     SDL_Window* window= SDL_CreateWindow("Tetris", wWidth, wHeight, SDL_WINDOW_OPENGL | SDL_WINDOW_FULLSCREEN);
     SDL_GLContext context = SDL_GL_CreateContext(window);
-    SDL_GL_SetSwapInterval(1); // vsync
+    SDL_GL_SetSwapInterval(1);
     glViewport(0, 0, wWidth, wHeight);
 
     glEnable(GL_BLEND);
@@ -201,7 +205,7 @@ int main(int argc, char** argv)
     setTextColor(game.labelStatusMessage, colorRed);
     game.labelStatusMessage->visible = false;
 
-    Image* splash_screen = loadImage("assets/splash_screen.webp");
+    Image* splash_screen = loadImage("assets/splash_screen.jpg");
 
     Menu* menu;
     menu = createMenu("1 PLAYER GAME|2 PLAYER GAME|EXIT|", wWidth / 2.0f, wHeight / 5.0f, 24.0f);
@@ -215,8 +219,6 @@ int main(int argc, char** argv)
     ScoreBoard* scoreBoard = createScoreBoard(20, 10, sbFontSize);
     scoreBoard->visible = true;
 
-    //moveText(game.labelStatusMessage, game.labelStatusMessage->x, scoreBoard->y - 48.0f * 2);
-
     bool keyPress[11] = {0};
     SDL_Event ev;
     while(game.running) {
@@ -224,7 +226,14 @@ int main(int argc, char** argv)
         // ************************
         // READ INPUT FROM KEYBOARD
         // ************************
-        SDL_PollEvent(&ev);
+        while(SDL_PollEvent(&ev)){
+            if(ev.type == SDL_EVENT_QUIT || menu->action == 3) {
+                SDL_zero(keyPress);
+                menu->action = -1;
+                game.running = false;
+                break;
+            }            
+        };
         const bool* currentKeyStates = SDL_GetKeyboardState(NULL);
         if(game.gameState == GameState_InMenu) {
             handleMenuInput(currentKeyStates, menu);
@@ -232,11 +241,12 @@ int main(int argc, char** argv)
         else {
             readInput(currentKeyStates, keyPress);
         }
+
         // ************************
         // Game Actions
         // ************************
-        // Quit game if we close the window or select exit from the menu
-        if(ev.type == SDL_EVENT_QUIT || menu->action == 3) {
+        // Quit game if we select exit from the menu
+        if(menu->action == 3) {
             SDL_zero(keyPress);
             game.running = false;
         }
@@ -402,7 +412,7 @@ int main(int argc, char** argv)
         drawImage(splash_screen, textureShader);
         
         int cnt = 0;
-        while(field[cnt] != NULL && cnt < MAX_PLAYERS) {
+        while(cnt < MAX_PLAYERS && field[cnt] != NULL) {
             drawField(field[cnt], gameShader, coloredTextureShader);
             cnt++;
         }
@@ -421,11 +431,15 @@ int main(int argc, char** argv)
     }
 
     // Free GameObjects
-    freeGameObjects(field);//, player);
+    freeGameObjects(field);
+    destroyScoreBoard(scoreBoard);
     destroyText(game.labelStatusMessage);
-    free(splash_screen);
-    free(menu);
-    free(scoreBoard);
+    destroyMenu(menu);
+    destroyImage(splash_screen);
+    destroyGameShader(gameShader);
+    destroyTextureShader(textureShader);
+    destroyColoredTextureShader(coloredTextureShader);
+    destroyFontCache();
 
     // Cleanup
     SDL_GL_DestroyContext(context);

@@ -65,7 +65,6 @@ Text* createText(char* str, char* fontName, float fontSize, float x, float y)
     int charIt = 0;
     float xx = 0.0f;
     float yy = fontSize;
-    // float yy = y + fontSize;
     while(*str)
     {
         unsigned char c = *str++;
@@ -162,9 +161,6 @@ void setTextColor(Text* t, Color cl)
     if(t == NULL)
         return;
     t->color = cl;
-    // t->color.r = r;
-    // t->color.g = g;
-    // t->color.b = b;
 }
 
 void moveText(Text* t, float x, float y)
@@ -181,9 +177,8 @@ void destroyText(Text* t)
         return;
     glDeleteBuffers(1, &t->vbo);
     glDeleteVertexArrays(1, &t->vao);
-    free(t->verts);
-    free(t);
-    t = NULL;
+    FREE(t->verts);
+    FREE(t);
 }
 
 void drawText(Text* t, ColoredTextureShader* shader)

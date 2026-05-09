@@ -150,3 +150,14 @@ void drawFieldWindow(FieldWindow *f, GameShader *shader) {
     glBindVertexArray(f->vao);
     glDrawArrays(GL_TRIANGLES, 0, f->vertCount);
 }
+
+void destroyFieldWindow(FieldWindow* f)
+{
+    if(f==NULL)
+        return;
+    glDeleteVertexArrays(1, &f->vao);
+    glDeleteBuffers(1, &f->vbo);
+    FREE(f->vertices);
+    FREE(f->layout);
+    FREE(f);
+}
