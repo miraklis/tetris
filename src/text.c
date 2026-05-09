@@ -7,9 +7,13 @@
 Text* createStaticText(char* str, char* fontName, float fontSize, float x, float y)
 {
     Text* t = (Text*)malloc(sizeof(Text));
+    
+    t->base.id = OBJ_TYPE_Text;
+    t->base.x = x;
+    t->base.y = y;
+    t->base.width = 0.0f;
+    t->base.height = 0.0f;
     t->type = TXTTYPE_STATIC;
-    t->x = x;
-    t->y = y;
     t->font = loadFont(fontName, fontSize);
     size_t charCount = slength(str, MAX_TEXT);//strnlen(str, MAX_TEXT);
     t->verts = (GlyphVertex*)calloc(sizeof(GlyphVertex), 6 * charCount);
@@ -46,7 +50,7 @@ Text* createStaticText(char* str, char* fontName, float fontSize, float x, float
     glEnableVertexAttribArray(1);
     orthoMatrix(0, 1920, 1080, 0, -1, 1, t->proj);
     translateMatrix(x, y, t->model);
-    t->color = colorWhite;
+    t->color = palette.colorWhite;
     t->visible = true;
     return t;
 }
@@ -55,8 +59,8 @@ Text* createText(char* str, char* fontName, float fontSize, float x, float y)
 {
     Text* t = (Text*)malloc(sizeof(Text));
     t->type = TXTTYPE_DYNAMIC;
-    t->x = x;
-    t->y = y;
+    t->base.x = x;
+    t->base.y = y;
     t->font = loadFont(fontName, fontSize);
     memset(t->txt, 0, MAX_TEXT);
     t->verts = (GlyphVertex*)calloc(sizeof(GlyphVertex), 6 * MAX_TEXT);
@@ -92,7 +96,7 @@ Text* createText(char* str, char* fontName, float fontSize, float x, float y)
     glEnableVertexAttribArray(1);
     orthoMatrix(0, dm->w, dm->h, 0, -1, 1, t->proj);
     translateMatrix(x, y, t->model);
-    t->color = colorWhite;
+    t->color = palette.colorWhite;
     t->visible = true;
     return t;
 }
@@ -166,8 +170,8 @@ void setTextColor(Text* t, Color cl)
 void moveText(Text* t, float x, float y)
 {
 
-    t->x = x;
-    t->y = y;
+    t->base.x = x;
+    t->base.y = y;
     translateMatrix(x, y, t->model);
 }
 

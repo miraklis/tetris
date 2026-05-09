@@ -23,21 +23,38 @@ typedef struct sColor {
     float r, g, b, a;
 } Color;
 
-extern const SDL_DisplayMode* dm;
+typedef struct sPalette {
+    Color colorBlack;
+    Color colorGray10;
+    Color colorGray20;
+    Color colorGray60;
+    Color colorRed;
+    Color colorBlue;
+    Color colorGreen;
+    Color colorYellow;
+    Color colorPink;
+    Color colorCyan;
+    Color colorPurple;
+    Color colorWhite;
+    Color transparentBlack80;
+} ColorsPalette;
 
-extern Color colorBlack;
-extern Color colorGray10;
-extern Color colorGray20;
-extern Color colorGray60;
-extern Color colorRed;
-extern Color colorBlue;
-extern Color colorGreen;
-extern Color colorYellow;
-extern Color colorPink;
-extern Color colorCyan;
-extern Color colorPurple;
-extern Color colorWhite;
-extern Color transparentBlack80;
+typedef enum eObjectTypes {
+    OBJ_TYPE_Window = 0,
+    OBJ_TYPE_Tetrominoe,
+    OBJ_TYPE_Text,
+    OBJ_TYPE_Arena,
+    OBJ_TYPE_Count
+} ObjectTypes;
+
+typedef struct sObject {
+    float x, y;
+    float width, height;
+    ObjectTypes id;
+} Object;
+
+extern ColorsPalette palette;
+extern const SDL_DisplayMode* dm;
 
 void orthoMatrix(float left, float right, float bottom, float top, float near, float far, float* m);
 void translateMatrix(float x, float y, float* m);

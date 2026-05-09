@@ -5,21 +5,23 @@
     #define M_PI 3.14159265358979323846
 #endif
 
-const SDL_DisplayMode* dm;
 
-Color colorBlack = {0.0f, 0.0f, 0.0f, 1.0f};
-Color colorGray10 = {0.1f, 0.1f, 0.1f, 1.0f};
-Color colorGray20 = {0.2f, 0.2f, 0.2f, 1.0f};
-Color colorGray60 = {0.6f, 0.6f, 0.6f, 1.0f};
-Color colorRed = {1.0f, 0.0f, 0.0f, 1.0f};
-Color colorBlue = {0.0f, 0.0f, 1.0f, 1.0f};
-Color colorGreen = {0.0f, 1.0f, 0.0f, 1.0f};
-Color colorYellow = {1.0f, 1.0f, 0.0f, 1.0f};
-Color colorPink = {0.8f, 0.2f, 0.5f, 1.0f};
-Color colorCyan = {0.0f, 1.0f, 1.0f, 1.0f};
-Color colorPurple = {0.3f, 0.2f, 0.9f, 1.0f};
-Color colorWhite = {1.0f, 1.0f, 1.0f, 1.0f};
-Color transparentBlack80 = {0, 0, 0, 0.8f};
+ColorsPalette palette = {
+    .colorBlack =           {0.0f, 0.0f, 0.0f, 1.0f},
+    .colorGray10 =          {0.1f, 0.1f, 0.1f, 1.0f},
+    .colorGray20 =          {0.2f, 0.2f, 0.2f, 1.0f},
+    .colorGray60 =          {0.6f, 0.6f, 0.6f, 1.0f},
+    .colorRed =             {1.0f, 0.0f, 0.0f, 1.0f},
+    .colorBlue =            {0.0f, 0.0f, 1.0f, 1.0f},
+    .colorGreen =           {0.0f, 1.0f, 0.0f, 1.0f},
+    .colorYellow =          {1.0f, 1.0f, 0.0f, 1.0f},
+    .colorPink =            {0.8f, 0.2f, 0.5f, 1.0f},
+    .colorCyan =            {0.0f, 1.0f, 1.0f, 1.0f},
+    .colorPurple =          {0.3f, 0.2f, 0.9f, 1.0f},
+    .colorWhite =           {1.0f, 1.0f, 1.0f, 1.0f},
+    .transparentBlack80 =   {0.0f, 0.0f, 0.0f, 0.8f}
+};
+const SDL_DisplayMode* dm;
 
 void orthoMatrix(float left, float right, float bottom, float top, float near, float far, float* m)
 {

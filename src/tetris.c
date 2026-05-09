@@ -1,16 +1,16 @@
-#include "fieldWindow.h"
-#include "fonts.h"
+//#include "fieldWindow.h"
 #include "std.h"
 #include "graphics.h"
 #include "shaders.h"
-#include "field.h"
+#include "fonts.h"
+#include "playfield.h"
 #include "player.h"
 #include "tetrominoe.h"
 #include "text.h"
 #include "menu.h"
 #include "image.h"
 #include "scoreboard.h"
-#include <SDL3/SDL_video.h>
+//#include <SDL3/SDL_video.h>
 
 #define TARGET_FPS 60
 #define FRAME_DELAY (1000 / TARGET_FPS)
@@ -43,9 +43,10 @@ void freeGameObjects(PlayField* field[MAX_PLAYERS])
             destroyText(field[i]->statusText);
             destroyTetrominoe(field[i]->currentPiece);
             destroyTetrominoe(field[i]->nextPiece);
-            destroyFieldWindow(field[i]->nextPieceWindow);
-            destroyFieldWindow(field[i]->infoWindow);
-            destroyFieldWindow(field[i]->fieldWindow);
+            destroyWindow(field[i]->nextPieceWindow);
+            destroyWindow(field[i]->infoWindow);
+            destroyWindow(field[i]->playWindow);
+            destroyArena(field[i]->arena);
             FREE(field[i]->player);
             FREE(field[i]);
         }
@@ -202,7 +203,7 @@ int main(int argc, char** argv)
     game.gameState = game.lastState = GameState_InMenu;
     game.running = true;
     game.labelStatusMessage = createText("GAME OVER !!!", FONT, 44.0f, wWidth / 2.0f - (6 * 48.0f), 48.0f);
-    setTextColor(game.labelStatusMessage, colorRed);
+    setTextColor(game.labelStatusMessage, palette.colorRed);
     game.labelStatusMessage->visible = false;
 
     Image* splash_screen = loadImage("assets/splash_screen.jpg");
@@ -387,7 +388,7 @@ int main(int argc, char** argv)
                         player->playerState = PlayerState_GameOver;
                         sprintf(player->statusMessage, "%s", "Game Over !!!");
                         setText(field[i]->statusText, player->statusMessage);
-                        setTextColor(field[i]->statusText, colorRed);
+                        setTextColor(field[i]->statusText, palette.colorRed);
                     }
                     // Get next piece and create new one
                     if(player->playerState != PlayerState_GameOver) {

@@ -1,7 +1,7 @@
-#include "fieldWindow.h"
-#include "graphics.h"
 #include "std.h"
+#include "graphics.h"
 #include "shaders.h"
+#include "window.h"
 #include "text.h"
 #include "scoreboard.h"
 
@@ -67,7 +67,7 @@ void addScore(ScoreBoard* sb, int score)
 ScoreBoard* createScoreBoard(int wx, int wy, float fontSize)
 {
     ScoreBoard* sb = (ScoreBoard*)malloc(sizeof(ScoreBoard));
-    sb->window = createFieldWindow(wx, wy, 16, 14, false, &transparentBlack80);
+    sb->window = createWindow(wx, wy, 16, 14, &palette.transparentBlack80, true);
 
     readFromFile(sb);
 
@@ -98,11 +98,11 @@ ScoreBoard* createScoreBoard(int wx, int wy, float fontSize)
             scoreText,
             FONT,
             sb->fontSize,
-            sb->window->rx + marginX,
-            sb->window->ry + (i * paddingY) + marginY
+            sb->window->base.x + marginX,
+            sb->window->base.y + (i * paddingY) + marginY
         );
         if(i < 3) {
-            setTextColor(sb->items[i], colorRed);
+            setTextColor(sb->items[i], palette.colorRed);
         }
     }
 
@@ -114,7 +114,7 @@ void drawScoreBoard(ScoreBoard* sb, GameShader* gameShader, ColoredTextureShader
     if(sb == NULL || !sb->visible)
         return;
 
-    drawFieldWindow(sb->window, gameShader);
+    drawWindow(sb->window, gameShader);
     for(int i = 0; i < MAX_SCORES; i++) {
         if(sb->items[i] != NULL) {
             drawText(sb->items[i], coloredTextureShader);
@@ -127,7 +127,7 @@ void destroyScoreBoard(ScoreBoard* sb)
     if(sb == NULL)
         return;
 
-    destroyFieldWindow(sb->window);
+    destroyWindow(sb->window);
     for(int i = 0; i < MAX_SCORES; i++) {
         if(sb->items[i] != NULL) {
             destroyText(sb->items[i]);
