@@ -6,11 +6,14 @@
 
 static void updateModelMatrix(Tetrominoe* t)
 {
+    uint32_t blockWidth = graphics.blockWidth;
+    uint32_t blockHeight = graphics.blockHeight;
+
     float translation[16];
     float rotation[16];
     translateMatrix(
-        t->fx + ((t->wx + t->centerOffsetX) * BLOCK_WIDTH),
-        t->fy + ((t->wy + t->centerOffsetY) * BLOCK_HEIGHT),
+        t->base.x + ((t->wx + t->centerOffsetX) * blockWidth),
+        t->base.y + ((t->wy + t->centerOffsetY) * blockHeight),
         translation
     );
     rotateMatrix(t->rotationState * 90.0f, rotation);
@@ -21,12 +24,18 @@ Tetrominoe* createTetrominoe(TetrominoeType type)
 {
     Tetrominoe* t = (Tetrominoe*)malloc(sizeof(Tetrominoe));
 
+    uint32_t blockWidth = graphics.blockWidth;
+    uint32_t blockHeight = graphics.blockHeight;
+
+    t->base.id = OBJ_TYPE_Tetrominoe;
+    t->base.x = 0.0f;
+    t->base.y = 0.0f;
+    t->base.width = 4 * blockWidth;
+    t->base.height = 4 * blockHeight;
     t->type = type;
     t->isAlive = false;
     t->wx = 0;
     t->wy = 0;
-    t->fx = 0;
-    t->fy = 0;
     t->rotationState = 0;
 
     // Define layout and color
@@ -37,7 +46,7 @@ Tetrominoe* createTetrominoe(TetrominoeType type)
         // ..X.
         // ..X.
             snprintf(t->shapeLayout, sizeof(t->shapeLayout), "%s", "..X...X...X...X.");
-            t->color = colorRed;
+            t->color = palette.colorRed;
             break;
         case TT_Square:
         // ....
@@ -45,7 +54,7 @@ Tetrominoe* createTetrominoe(TetrominoeType type)
         // .XX.
         // ....
             snprintf(t->shapeLayout, sizeof(t->shapeLayout), "%s", ".....XX..XX.....");
-            t->color = colorBlue;
+            t->color = palette.colorBlue;
             break;
         case TT_T:
         // ..X.
@@ -53,7 +62,7 @@ Tetrominoe* createTetrominoe(TetrominoeType type)
         // ..X.
         // ....
             snprintf(t->shapeLayout, sizeof(t->shapeLayout), "%s", "..X..XX...X.....");
-            t->color = colorGreen;
+            t->color = palette.colorGreen;
             break;
         case TT_L1:
         // .X..
@@ -61,7 +70,7 @@ Tetrominoe* createTetrominoe(TetrominoeType type)
         // .XX.
         // ....
             snprintf(t->shapeLayout, sizeof(t->shapeLayout), "%s", ".X...X...XX.....");
-            t->color = colorYellow;
+            t->color = palette.colorYellow;
             break;
         case TT_L2:
         // ..X.
@@ -69,7 +78,7 @@ Tetrominoe* createTetrominoe(TetrominoeType type)
         // .XX.
         // ....
             snprintf(t->shapeLayout, sizeof(t->shapeLayout), "%s", "..X...X..XX.....");
-            t->color = colorPink;
+            t->color = palette.colorPink;
             break;
         case TT_h1:
         // .X..
@@ -77,7 +86,7 @@ Tetrominoe* createTetrominoe(TetrominoeType type)
         // ..X.
         // ....
             snprintf(t->shapeLayout, sizeof(t->shapeLayout), "%s", ".X...XX...X.....");
-            t->color = colorCyan;
+            t->color = palette.colorCyan;
             break;
         case TT_h2:
         // ..X.
@@ -85,11 +94,11 @@ Tetrominoe* createTetrominoe(TetrominoeType type)
         // .X..
         // ....
             snprintf(t->shapeLayout, sizeof(t->shapeLayout), "%s", "..X..XX..X......");
-            t->color = colorPurple;
+            t->color = palette.colorPurple;
             break;
         default:
             snprintf(t->shapeLayout, sizeof(t->shapeLayout), "%s", "................");
-            t->color = colorBlack;
+            t->color = palette.colorBlack;
             break;        
     }
     // move the origin to the center of the piece for easier rotation
@@ -108,8 +117,8 @@ Tetrominoe* createTetrominoe(TetrominoeType type)
             updateBlockVertices(
                 t->vertices, 
                 &vertCnt,
-                ((int)(strParser % 4) - t->centerOffsetX) * BLOCK_WIDTH,
-                ((int)(strParser / 4) - t->centerOffsetY) * BLOCK_HEIGHT,
+                ((int)(strParser % 4) - t->centerOffsetX) * blockWidth,
+                ((int)(strParser / 4) - t->centerOffsetY) * blockHeight,
                 borderThickness,
                 &t->color, &wc, 0.0f);
             // Get next character
@@ -131,7 +140,7 @@ Tetrominoe* createTetrominoe(TetrominoeType type)
     glBufferData(GL_ARRAY_BUFFER, TETROMINOE_VERTICES_COUNT * sizeof(Vertex), t->vertices, GL_DYNAMIC_DRAW);
 
     // Update uniforms proj and model
-    orthoMatrix(0, dm->w, dm->h, 0, -1, 1, t->proj);
+    orthoMatrix(0, graphics.screenWidth, graphics.screenHeight, 0, -1, 1, t->proj);
     updateModelMatrix(t);
 
     return t;

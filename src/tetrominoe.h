@@ -19,22 +19,22 @@ typedef enum {
 } TetrominoeType;
 
 typedef struct sTetrominoe {
-    int wx, wy;
-    float fx, fy;
-    int rotationState;
-    bool isAlive;
-    char shapeLayout[17];
-    float centerOffsetX;
-    float centerOffsetY;
-    Color color;
-    TetrominoeType type;
-    
-    GLuint vao;
-    GLuint vbo;
+    Object base;
+    Vertex vertices[TETROMINOE_VERTICES_COUNT];
     float proj[16];
     float model[16];
-    Vertex vertices[TETROMINOE_VERTICES_COUNT];
+    char shapeLayout[17];
+    Color color;
+    float centerOffsetX;
+    float centerOffsetY;
+    int wx, wy;
+    GLuint vao;
+    GLuint vbo;
+    int rotationState;
+    TetrominoeType type;
+    bool isAlive;
 } Tetrominoe;
+static_assert(offsetof(Tetrominoe, base)==0, "Tetrominoe struct not aligned for base object");
 
 Tetrominoe* createTetrominoe(TetrominoeType type);
 void moveTetrominoe(int x, int y, Tetrominoe* t);

@@ -1,9 +1,11 @@
 #ifndef TEXT_H
 #define TEXT_H
 
+#include "std.h"
 #include "graphics.h"
 #include "shaders.h"
 #include "fonts.h"
+//#include <cstring>
 //#include "stb_truetype.h"
 
 #define MAX_TEXT 256
@@ -20,13 +22,14 @@ typedef struct GlyphVertex {
 } GlyphVertex;
 
 typedef struct Text {
+    Object base;
     enum TextType type;
     bool visible;
     float proj[16];
     float model[16];
     Color color;
     size_t vertsCount;
-    float x , y;
+    //float x , y;
     Font* font;
     char txt[MAX_TEXT];
 
@@ -37,6 +40,7 @@ typedef struct Text {
     GLint locColor;
     GlyphVertex* verts;
 } Text;
+static_assert(offsetof(Text, base) == 0, "Text struct not aligned for base object" );
 
 Text* createStaticText(char* str, char* fontName, float fontSize, float x, float y);
 Text* createText(char* str, char* fontName, float fontSize, float x, float y);

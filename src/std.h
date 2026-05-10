@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <math.h>
 #include <time.h>
+#include <assert.h>
 
 #define FREE(p) \
     do {             \
@@ -16,6 +17,5 @@
     } while(0)
 
 size_t slength(const char* s, size_t maxlen);
-//void deallocPtr(void* ptr);
 
 #endif // STD_H
