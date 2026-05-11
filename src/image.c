@@ -97,6 +97,4 @@ void destroyImage(Image* img)
     glDeleteTextures(1, &img->textureID);
     stbi_image_free(img->data);
     FREE(img);
-    // free(img);
-    // img=NULL;
 }

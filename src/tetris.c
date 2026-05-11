@@ -195,7 +195,8 @@ int main(int argc, char** argv)
     // ************************
     // Create Shaders
     // ************************    
-    GameShader* gameShader = createGameShader();
+    SimpleShader* simpleShader = createSimpleShader();
+    GlowShader* glowShader = createGlowShader();
     TextureShader* textureShader = createTextureShader();
     ColoredTextureShader* coloredTextureShader = createColoredTextureShader();
 
@@ -418,13 +419,13 @@ int main(int argc, char** argv)
         
         int cnt = 0;
         while(cnt < MAX_PLAYERS && field[cnt] != NULL) {
-            drawField(field[cnt], gameShader, coloredTextureShader);
+            drawField(field[cnt], simpleShader, glowShader, coloredTextureShader);
             cnt++;
         }
 
         drawText(game.labelStatusMessage, coloredTextureShader);
-        drawScoreBoard(scoreBoard, gameShader, coloredTextureShader);
-        drawMenu(menu, gameShader, coloredTextureShader);
+        drawScoreBoard(scoreBoard, simpleShader, coloredTextureShader);
+        drawMenu(menu, simpleShader, coloredTextureShader);
 
         SDL_GL_SwapWindow(graphics.window);
 
@@ -441,7 +442,8 @@ int main(int argc, char** argv)
     destroyText(game.labelStatusMessage);
     destroyMenu(menu);
     destroyImage(splash_screen);
-    destroyGameShader(gameShader);
+    destroySimpleShader(simpleShader);
+    destroyGlowShader(glowShader);
     destroyTextureShader(textureShader);
     destroyColoredTextureShader(coloredTextureShader);
     destroyFontCache();

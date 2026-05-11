@@ -6,18 +6,33 @@
 
 #define QUAD_VERTICES 6
 
-// #define BLOCK_WIDTH 34
-// #define BLOCK_HEIGHT 34
 #define FIELD_WIDTH 12
 #define FIELD_HEIGHT 22
 
 #define FONT "assets/PressStart2P-Regular.ttf"
 
-typedef struct sVertex {
+typedef enum {
+    VAO_LAYOUT_SIMPLE,
+    VAO_LAYOUT_GLOW,
+    VAO_LAYOUT_GLYPH,
+    VAO_LAYOUT_COUNT
+} VertexLayout;
+
+typedef struct sVertexSimple {
+    float x, y;
+    float r, g, b, a;
+} VertexSimple;
+
+typedef struct sVertexGlow {
     float x, y;
     float r, g, b, a;
     float glow;
-} Vertex;
+} VertexGlow;
+
+typedef struct sVertexGlyph {
+    float x,y;
+    float u,v;
+} VertexGlyph;
 
 typedef struct sColor {
     float r, g, b, a;
@@ -66,16 +81,18 @@ typedef struct sGraphics {
 } Graphics;
 extern Graphics graphics;
 
-//extern const SDL_DisplayMode* dm;
-
 void initializeGraphics(void);
 void destroyGraphics(void);
+
+void setupVertexLayout(GLuint vao, GLuint vbo, VertexLayout layout);
+
 
 void orthoMatrix(float left, float right, float bottom, float top, float near, float far, float* m);
 void translateMatrix(float x, float y, float* m);
 void rotateMatrix(float angle, float* m);
 void multiplyMatrix4x4(const float* a, const float* b, float* out);
 
-void updateBlockVertices(Vertex* vertices, int* count, float bx, float by, float borderThickness, const Color* blockColor, const Color* borderColor, float glow);
+void updateVerticesSimple(VertexSimple* vertices, int* count, float bx, float by, float borderThickness, const Color* blockColor, const Color* borderColor);
+void updateVerticesGlow(VertexGlow* vertices, int* count, float bx, float by, float borderThickness, const Color* blockColor, const Color* borderColor, float glow);
 
 #endif

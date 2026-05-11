@@ -56,6 +56,40 @@ void destroyGraphics(void)
     SDL_Quit();
 }
 
+void setupVertexLayout(GLuint vao, GLuint vbo, VertexLayout layout)
+{
+    glBindVertexArray(vao);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+
+    switch(layout) {
+        case VAO_LAYOUT_SIMPLE:
+            glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(VertexSimple), (void*)0);
+            glEnableVertexAttribArray(0);
+            glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(VertexSimple), (void*)(2*sizeof(float)));
+            glEnableVertexAttribArray(1);
+            glDisableVertexAttribArray(2);
+            break;
+        case VAO_LAYOUT_GLOW:
+            glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(VertexGlow), (void*)0);
+            glEnableVertexAttribArray(0);
+            glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(VertexGlow), (void*)(2*sizeof(float)));
+            glEnableVertexAttribArray(1);
+            glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, sizeof(VertexGlow), (void*)(6*sizeof(float)));
+            glEnableVertexAttribArray(2);
+            break;
+        case VAO_LAYOUT_GLYPH:
+            glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(VertexGlyph), (void*)0);
+            glEnableVertexAttribArray(0);
+            glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(VertexGlyph), (void*)(2*sizeof(float)));
+            glEnableVertexAttribArray(1);
+            glDisableVertexAttribArray(2);
+            break;
+        default:
+            printf("No VAO layout selected to setup");
+            break;
+    }
+}
+
 void orthoMatrix(float left, float right, float bottom, float top, float near, float far, float* m)
 {
     m[0] = 2/(right-left);  m[4] = 0;               m[8] = 0;               m[12] = -(right+left)/(right-left);
@@ -101,25 +135,48 @@ void multiplyMatrix4x4(const float* a, const float* b, float* out)
     }
 }
 
-inline void updateBlockVertices(Vertex* vertices, int* count, float bx, float by, float borderThickness, const Color* blockColor, const Color* borderColor, float glow)
+void updateVerticesSimple(VertexSimple* vertices, int* count, float bx, float by, float borderThickness, const Color* blockColor, const Color* borderColor)
 {
         float bw = graphics.blockWidth;
         float bh = graphics.blockHeight;
         // Background block (used as border of the block)
-        vertices[(*count)++] = (Vertex){bx, by, borderColor->r, borderColor->g, borderColor->b, borderColor->a, 0.0f};
-        vertices[(*count)++] = (Vertex){bx + bw, by, borderColor->r, borderColor->g, borderColor->b, borderColor->a, 0.0f};
-        vertices[(*count)++] = (Vertex){bx, by + bh, borderColor->r, borderColor->g, borderColor->b, borderColor->a, 0.0f};
-        vertices[(*count)++] = (Vertex){bx, by + bh, borderColor->r, borderColor->g, borderColor->b, borderColor->a, 0.0f};
-        vertices[(*count)++] = (Vertex){bx + bw, by, borderColor->r, borderColor->g, borderColor->b, borderColor->a, 0.0f};
-        vertices[(*count)++] = (Vertex){bx + bw, by + bh, borderColor->r, borderColor->g, borderColor->b, borderColor->a, 0.0f};
+        vertices[(*count)++] = (VertexSimple){bx, by, borderColor->r, borderColor->g, borderColor->b, borderColor->a};
+        vertices[(*count)++] = (VertexSimple){bx + bw, by, borderColor->r, borderColor->g, borderColor->b, borderColor->a};
+        vertices[(*count)++] = (VertexSimple){bx, by + bh, borderColor->r, borderColor->g, borderColor->b, borderColor->a};
+        vertices[(*count)++] = (VertexSimple){bx, by + bh, borderColor->r, borderColor->g, borderColor->b, borderColor->a};
+        vertices[(*count)++] = (VertexSimple){bx + bw, by, borderColor->r, borderColor->g, borderColor->b, borderColor->a};
+        vertices[(*count)++] = (VertexSimple){bx + bw, by + bh, borderColor->r, borderColor->g, borderColor->b, borderColor->a};
+        // Define border thickness
+        bx += borderThickness; by += borderThickness;
+        bw -= (borderThickness * 2.0f); bh -= (borderThickness * 2.0f);
+        // Foregrouck
+        vertices[(*count)++] = (VertexSimple){bx, by, blockColor->r, blockColor->g, blockColor->b, blockColor->a};
+        vertices[(*count)++] = (VertexSimple){bx + bw, by, blockColor->r, blockColor->g, blockColor->b, blockColor->a};
+        vertices[(*count)++] = (VertexSimple){bx, by + bh, blockColor->r, blockColor->g, blockColor->b, blockColor->a};
+        vertices[(*count)++] = (VertexSimple){bx, by + bh, blockColor->r, blockColor->g, blockColor->b, blockColor->a};
+        vertices[(*count)++] = (VertexSimple){bx + bw, by, blockColor->r, blockColor->g, blockColor->b, blockColor->a};
+        vertices[(*count)++] = (VertexSimple){bx + bw, by + bh, blockColor->r, blockColor->g, blockColor->b, blockColor->a};
+}
+
+void updateVerticesGlow(VertexGlow* vertices, int* count, float bx, float by, float borderThickness, const Color* blockColor, const Color* borderColor, float glow)
+{
+        float bw = graphics.blockWidth;
+        float bh = graphics.blockHeight;
+        // Background block (used as border of the block)
+        vertices[(*count)++] = (VertexGlow){bx, by, borderColor->r, borderColor->g, borderColor->b, borderColor->a, 0.0f};
+        vertices[(*count)++] = (VertexGlow){bx + bw, by, borderColor->r, borderColor->g, borderColor->b, borderColor->a, 0.0f};
+        vertices[(*count)++] = (VertexGlow){bx, by + bh, borderColor->r, borderColor->g, borderColor->b, borderColor->a, 0.0f};
+        vertices[(*count)++] = (VertexGlow){bx, by + bh, borderColor->r, borderColor->g, borderColor->b, borderColor->a, 0.0f};
+        vertices[(*count)++] = (VertexGlow){bx + bw, by, borderColor->r, borderColor->g, borderColor->b, borderColor->a, 0.0f};
+        vertices[(*count)++] = (VertexGlow){bx + bw, by + bh, borderColor->r, borderColor->g, borderColor->b, borderColor->a, 0.0f};
         // Define border thickness
         bx += borderThickness; by += borderThickness;
         bw -= (borderThickness * 2.0f); bh -= (borderThickness * 2.0f);
         // Foreground Block
-        vertices[(*count)++] = (Vertex){bx, by, blockColor->r, blockColor->g, blockColor->b, blockColor->a, glow};
-        vertices[(*count)++] = (Vertex){bx + bw, by, blockColor->r, blockColor->g, blockColor->b, blockColor->a, glow};
-        vertices[(*count)++] = (Vertex){bx, by + bh, blockColor->r, blockColor->g, blockColor->b, blockColor->a, glow};
-        vertices[(*count)++] = (Vertex){bx, by + bh, blockColor->r, blockColor->g, blockColor->b, blockColor->a, glow};
-        vertices[(*count)++] = (Vertex){bx + bw, by, blockColor->r, blockColor->g, blockColor->b, blockColor->a, glow};
-        vertices[(*count)++] = (Vertex){bx + bw, by + bh, blockColor->r, blockColor->g, blockColor->b, blockColor->a, glow};
+        vertices[(*count)++] = (VertexGlow){bx, by, blockColor->r, blockColor->g, blockColor->b, blockColor->a, glow};
+        vertices[(*count)++] = (VertexGlow){bx + bw, by, blockColor->r, blockColor->g, blockColor->b, blockColor->a, glow};
+        vertices[(*count)++] = (VertexGlow){bx, by + bh, blockColor->r, blockColor->g, blockColor->b, blockColor->a, glow};
+        vertices[(*count)++] = (VertexGlow){bx, by + bh, blockColor->r, blockColor->g, blockColor->b, blockColor->a, glow};
+        vertices[(*count)++] = (VertexGlow){bx + bw, by, blockColor->r, blockColor->g, blockColor->b, blockColor->a, glow};
+        vertices[(*count)++] = (VertexGlow){bx + bw, by + bh, blockColor->r, blockColor->g, blockColor->b, blockColor->a, glow};
 }

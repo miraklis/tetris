@@ -33,7 +33,7 @@ void getNextTetrominoe(PlayField* f);
 void moveCurrentPiece(PlayField* f, int x, int y);
 void rotateCurrentPiece(PlayField* f);
 
-void drawField(PlayField* f, GameShader* shader, ColoredTextureShader* coloredTextureShader);
+void drawField(PlayField* f, SimpleShader* shader,  GlowShader* glowShader, ColoredTextureShader* coloredTextureShader);
 void removeFilledLines(PlayField* f);
 int checkForFilledLines(PlayField* f, Tetrominoe* t);
 bool checkGameOver(PlayField* f);

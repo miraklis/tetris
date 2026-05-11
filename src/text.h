@@ -16,11 +16,6 @@ enum TextType {
     TXTTYPE_COUNT
 };
 
-typedef struct GlyphVertex {
-    float x,y;
-    float u,v;
-} GlyphVertex;
-
 typedef struct Text {
     Object base;
     enum TextType type;
@@ -29,7 +24,6 @@ typedef struct Text {
     float model[16];
     Color color;
     size_t vertsCount;
-    //float x , y;
     Font* font;
     char txt[MAX_TEXT];
 
@@ -38,7 +32,7 @@ typedef struct Text {
     GLint locProj;
     GLint locTexture;
     GLint locColor;
-    GlyphVertex* verts;
+    VertexGlyph* verts;
 } Text;
 static_assert(offsetof(Text, base) == 0, "Text struct not aligned for base object" );
 

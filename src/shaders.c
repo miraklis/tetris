@@ -3,7 +3,29 @@
 
 static GLuint currentProgram;
 
-const char* default_VS = 
+const char* simple_VS = 
+"#version 330 core\n"
+"layout (location = 0) in vec2 position;\n"
+"layout (location = 1) in vec4 color;\n"
+"uniform mat4 proj;\n"
+"uniform mat4 model;\n"
+"out vec4 vColor;\n"
+"void main()\n"
+"{\n"
+"    gl_Position = proj * model * vec4(position, 0.0, 1.0);\n"
+"    vColor = color;\n"
+"}";
+
+const char* simple_FS = 
+"#version 330 core\n"
+"in vec4 vColor;\n"
+"out vec4 FragColor;\n"
+"void main()\n"
+"{\n"
+"    FragColor = vColor;\n"
+"}";
+
+const char* glow_VS = 
 "#version 330 core\n"
 "layout (location = 0) in vec2 position;\n"
 "layout (location = 1) in vec4 color;\n"
@@ -19,16 +41,7 @@ const char* default_VS =
 "    vGlow = glow;\n"
 "}";
 
-// const char* default_FS = 
-// "#version 330 core\n"
-// "in vec4 vColor;\n"
-// "out vec4 FragColor;\n"
-// "void main()\n"
-// "{\n"
-// "    FragColor = vColor;\n"
-// "}";
-
-const char* default_FS = 
+const char* glow_FS = 
 "#version 330 core\n"
 "in vec4 vColor;\n"
 "in float vGlow;\n"
@@ -84,13 +97,34 @@ static GLuint compileShader(GLenum type, const char* src)
     return shader;
 }
 
-GameShader* createGameShader(void)
+SimpleShader* createSimpleShader(void)
 {
-    GameShader* shader = (GameShader*)malloc(sizeof(GameShader));
+    SimpleShader* shader = (SimpleShader*)malloc(sizeof(SimpleShader));
 
     shader->program = glCreateProgram();
-    GLuint v = compileShader(GL_VERTEX_SHADER, default_VS);
-    GLuint f = compileShader(GL_FRAGMENT_SHADER, default_FS);
+    GLuint v = compileShader(GL_VERTEX_SHADER, simple_VS);
+    GLuint f = compileShader(GL_FRAGMENT_SHADER, simple_FS);
+    
+    glAttachShader(shader->program, v);
+    glAttachShader(shader->program, f);
+    glLinkProgram(shader->program);
+
+    glDeleteShader(v);
+    glDeleteShader(f);
+
+    shader->locProj = glGetUniformLocation(shader->program, "proj");
+    shader->locModel = glGetUniformLocation(shader->program, "model");
+
+    return shader;
+}
+
+GlowShader* createGlowShader(void)
+{
+    GlowShader* shader = (GlowShader*)malloc(sizeof(GlowShader));
+
+    shader->program = glCreateProgram();
+    GLuint v = compileShader(GL_VERTEX_SHADER, glow_VS);
+    GLuint f = compileShader(GL_FRAGMENT_SHADER, glow_FS);
     
     glAttachShader(shader->program, v);
     glAttachShader(shader->program, f);
@@ -158,7 +192,12 @@ void useProgram(GLuint program) {
     }
 }
 
-void destroyGameShader(GameShader* shader) {
+void destroySimpleShader(SimpleShader* shader) {
+    glDeleteProgram(shader->program);
+    FREE(shader);
+}
+
+void destroyGlowShader(GlowShader* shader) {
     glDeleteProgram(shader->program);
     FREE(shader);
 }

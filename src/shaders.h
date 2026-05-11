@@ -4,12 +4,18 @@
 #include "graphics.h"
 #include <GLES3/gl3.h>
 
-typedef struct sGameShader {
+typedef struct sSimpleShader {
+    GLuint program;
+    GLint locProj;
+    GLint locModel;
+} SimpleShader;
+
+typedef struct sGlowShader {
     GLuint program;
     GLint locProj;
     GLint locModel;
     GLfloat locTime;
-} GameShader;
+} GlowShader;
 
 typedef struct sTextureShader {
     GLuint program;
@@ -26,13 +32,15 @@ typedef struct sColoredTextureShader {
     GLint locTexture;
 } ColoredTextureShader;
 
-GameShader* createGameShader(void);
+SimpleShader* createSimpleShader(void);
+GlowShader* createGlowShader(void);
 TextureShader* createTextureShader(void);
 ColoredTextureShader* createColoredTextureShader(void);
 
 void useProgram(GLuint shader);
 
-void destroyGameShader(GameShader* shader);
+void destroySimpleShader(SimpleShader* shader);
+void destroyGlowShader(GlowShader* shader);
 void destroyTextureShader(TextureShader* shader);
 void destroyColoredTextureShader(ColoredTextureShader* shader);
 

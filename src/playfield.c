@@ -91,17 +91,17 @@ void rotateCurrentPiece(PlayField* f)
         rotateTetrominoe(f->currentPiece);
 }
 
-void drawField(PlayField* f, GameShader* shader, ColoredTextureShader* coloredTextureShader)
+void drawField(PlayField* f, SimpleShader* simpleShader, GlowShader* glowShader, ColoredTextureShader* coloredTextureShader)
 {
     // Draw Windows
-    drawWindow(f->playWindow, shader);
-    drawWindow(f->nextPieceWindow, shader);
-    drawWindow(f->infoWindow, shader);
-    drawArena(f->arena, shader);
+    drawWindow(f->playWindow, simpleShader);
+    drawWindow(f->nextPieceWindow, simpleShader);
+    drawWindow(f->infoWindow, simpleShader);
+    drawArena(f->arena, glowShader);
     
     // Draw Tetrominoes
-    drawTetrominoe(f->currentPiece, shader);
-    drawTetrominoe(f->nextPiece, shader);
+    drawTetrominoe(f->currentPiece, simpleShader);
+    drawTetrominoe(f->nextPiece, simpleShader);
     // Draw Texts
     drawText(f->scoreText, coloredTextureShader);
     drawText(f->statusText, coloredTextureShader);

@@ -94,45 +94,47 @@ Menu* createMenu(char* items, float x, float y, float fontSize)
     const float menuHeight = m->h;
 
     // Menu Background
-    m->backgroundVertices[0] = (Vertex){mx, my, 0.0f, 0.0f, 1.0f, 1.0f};
-    m->backgroundVertices[1] = (Vertex){mx, my + menuHeight, 0.0f, 0.0f, 1.0f, 1.0f};
-    m->backgroundVertices[2] = (Vertex){mx + menuWidth, my + menuHeight, 1.0f, 0.0f, 0.0f, 1.0f};
-    m->backgroundVertices[3] = (Vertex){mx + menuWidth, my + menuHeight, 1.0f, 0.0f, 0.0f, 1.0f};
-    m->backgroundVertices[4] = (Vertex){mx + menuWidth, my, 1.0f, 0.0f, 0.0f, 1.0f};
-    m->backgroundVertices[5] = (Vertex){mx, my, 0.0f, 0.0f, 1.0f, 1.0f};
+    m->backgroundVertices[0] = (VertexSimple){mx, my, 0.0f, 0.0f, 1.0f, 1.0f};
+    m->backgroundVertices[1] = (VertexSimple){mx, my + menuHeight, 0.0f, 0.0f, 1.0f, 1.0f};
+    m->backgroundVertices[2] = (VertexSimple){mx + menuWidth, my + menuHeight, 1.0f, 0.0f, 0.0f, 1.0f};
+    m->backgroundVertices[3] = (VertexSimple){mx + menuWidth, my + menuHeight, 1.0f, 0.0f, 0.0f, 1.0f};
+    m->backgroundVertices[4] = (VertexSimple){mx + menuWidth, my, 1.0f, 0.0f, 0.0f, 1.0f};
+    m->backgroundVertices[5] = (VertexSimple){mx, my, 0.0f, 0.0f, 1.0f, 1.0f};
 
     // Menu Selected Item
     float selectedItemY = my;
-    m->barVertices[0] = (Vertex){mx, selectedItemY, 0.3f, 0.3f, 0.3f, 1.0f};
-    m->barVertices[1] = (Vertex){mx, selectedItemY + rowHeight, 0.3f, 0.3f, 0.3f, 1.0f};
-    m->barVertices[2] = (Vertex){mx + menuWidth, selectedItemY + rowHeight, 0.3f, 0.3f, 0.3f, 1.0f};
-    m->barVertices[3] = (Vertex){mx + menuWidth, selectedItemY + rowHeight, 0.3f, 0.3f, 0.3f, 1.0f};
-    m->barVertices[4] = (Vertex){ mx + menuWidth, selectedItemY, 0.3f, 0.3f, 0.3f, 1.0f};
-    m->barVertices[5] = (Vertex){ mx, selectedItemY, 0.3f, 0.3f, 0.3f, 1.0f};
+    m->barVertices[0] = (VertexSimple){mx, selectedItemY, 0.3f, 0.3f, 0.3f, 1.0f};
+    m->barVertices[1] = (VertexSimple){mx, selectedItemY + rowHeight, 0.3f, 0.3f, 0.3f, 1.0f};
+    m->barVertices[2] = (VertexSimple){mx + menuWidth, selectedItemY + rowHeight, 0.3f, 0.3f, 0.3f, 1.0f};
+    m->barVertices[3] = (VertexSimple){mx + menuWidth, selectedItemY + rowHeight, 0.3f, 0.3f, 0.3f, 1.0f};
+    m->barVertices[4] = (VertexSimple){ mx + menuWidth, selectedItemY, 0.3f, 0.3f, 0.3f, 1.0f};
+    m->barVertices[5] = (VertexSimple){ mx, selectedItemY, 0.3f, 0.3f, 0.3f, 1.0f};
 
     //GLuint vbo;
 
     // Background VAO and VBO
     glGenVertexArrays(1, &m->backVao);
     glGenBuffers(1, &m->backVbo);
-    glBindVertexArray(m->backVao);
-    glBindBuffer(GL_ARRAY_BUFFER, m->backVbo);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(2*sizeof(float)));
-    glEnableVertexAttribArray(1);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * 6, m->backgroundVertices, GL_DYNAMIC_DRAW);
+    setupVertexLayout(m->backVao, m->backVbo, VAO_LAYOUT_SIMPLE);
+    // glBindVertexArray(m->backVao);
+    // glBindBuffer(GL_ARRAY_BUFFER, m->backVbo);
+    // glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
+    // glEnableVertexAttribArray(0);
+    // glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(2*sizeof(float)));
+    // glEnableVertexAttribArray(1);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(VertexSimple) * 6, m->backgroundVertices, GL_DYNAMIC_DRAW);
 
     // Bar VAO and VBO
     glGenVertexArrays(1, &m->barVao);
     glGenBuffers(1, &m->barVbo);
-    glBindVertexArray(m->barVao);
-    glBindBuffer(GL_ARRAY_BUFFER, m->barVbo);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(2*sizeof(float)));
-    glEnableVertexAttribArray(1);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * 6, m->barVertices, GL_DYNAMIC_DRAW);
+    setupVertexLayout(m->barVao, m->barVbo, VAO_LAYOUT_SIMPLE);
+    // glBindVertexArray(m->barVao);
+    // glBindBuffer(GL_ARRAY_BUFFER, m->barVbo);
+    // glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
+    // glEnableVertexAttribArray(0);
+    // glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(2*sizeof(float)));
+    // glEnableVertexAttribArray(1);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(VertexSimple) * 6, m->barVertices, GL_DYNAMIC_DRAW);
 
     // Projection and Model matrices
     orthoMatrix(0, graphics.screenWidth, graphics.screenHeight, 0, -1, 1, m->proj);
@@ -168,7 +170,7 @@ void handleMenuInput(const bool* currentKeyStates, Menu* menu)
     memcpy(previousMenuKeyStates, currentKeyStates, SDL_SCANCODE_COUNT);    
 }
 
-void drawMenu(Menu* menu, GameShader* gameShader, ColoredTextureShader* uiShader)
+void drawMenu(Menu* menu, SimpleShader* gameShader, ColoredTextureShader* uiShader)
 {
     if(menu == NULL || !menu->visible)
         return;

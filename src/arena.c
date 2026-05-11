@@ -30,7 +30,7 @@ void updateArena(Arena* f)
             borderColor = palette.colorGray10;
         }
         float glow = f->layout[strParser] == '=' ?  1.0f : 0.0f;
-        updateBlockVertices(
+        updateVerticesGlow(
             f->vertices, 
             &cnt,
             ((int)(strParser % f->width) * blockWidth),
@@ -41,7 +41,7 @@ void updateArena(Arena* f)
     }
 
     glBindBuffer(GL_ARRAY_BUFFER, f->vbo);
-    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Vertex) * f->vertCount, f->vertices);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(VertexGlow) * f->vertCount, f->vertices);
 
 }
 
@@ -64,7 +64,7 @@ Arena* createArena(int wx, int wy, int width, int height)
     f->height = height;
 
     f->vertCount = (width * height * 2) * 6;
-    f->vertices = (Vertex*)malloc(sizeof(Vertex) * f->vertCount);
+    f->vertices = (VertexGlow*)malloc(sizeof(VertexGlow) * f->vertCount);
 
     char* layout = (char*)malloc(sizeof(char) * width * height);
     for(int i = 0; i < height; i++) {
@@ -97,7 +97,7 @@ Arena* createArena(int wx, int wy, int width, int height)
             borderThickness = 0.5f;
             borderColor = palette.colorGray10;
         }
-        updateBlockVertices(
+        updateVerticesGlow(
             f->vertices, 
             &cnt,
             ((int)(strParser % width) * blockWidth),
@@ -109,15 +109,16 @@ Arena* createArena(int wx, int wy, int width, int height)
 
     glGenVertexArrays(1, &f->vao);
     glGenBuffers(1, &f->vbo);
-    glBindVertexArray(f->vao);
-    glBindBuffer(GL_ARRAY_BUFFER, f->vbo);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(2*sizeof(float)));
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(6*sizeof(float)));
-    glEnableVertexAttribArray(2);
-    glBufferData(GL_ARRAY_BUFFER, f->vertCount * sizeof(Vertex), f->vertices, GL_DYNAMIC_DRAW);
+    setupVertexLayout(f->vao, f->vbo, VAO_LAYOUT_GLOW);
+    // glBindVertexArray(f->vao);
+    // glBindBuffer(GL_ARRAY_BUFFER, f->vbo);
+    // glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
+    // glEnableVertexAttribArray(0);
+    // glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(2*sizeof(float)));
+    // glEnableVertexAttribArray(1);
+    // glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(6*sizeof(float)));
+    // glEnableVertexAttribArray(2);
+    glBufferData(GL_ARRAY_BUFFER, f->vertCount * sizeof(VertexGlow), f->vertices, GL_DYNAMIC_DRAW);
     
     orthoMatrix(0, graphics.screenWidth, graphics.screenHeight, 0, -1, 1, f->proj);
     translateMatrix(f->base.x, f->base.y, f->model);
@@ -125,7 +126,7 @@ Arena* createArena(int wx, int wy, int width, int height)
     return f;
 }
 
-void drawArena(Arena *f, GameShader *shader) {
+void drawArena(Arena *f, GlowShader *shader) {
     useProgram(shader->program);
     glUniformMatrix4fv(shader->locProj, 1, GL_FALSE, f->proj);
     glUniformMatrix4fv(shader->locModel, 1, GL_FALSE, f->model);

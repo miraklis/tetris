@@ -114,13 +114,13 @@ Tetrominoe* createTetrominoe(TetrominoeType type)
         } else {
             Color wc = {0.6f, 0.6f, 0.6f, 1.0f};
             float borderThickness = 1.0f;
-            updateBlockVertices(
+            updateVerticesSimple(
                 t->vertices, 
                 &vertCnt,
                 ((int)(strParser % 4) - t->centerOffsetX) * blockWidth,
                 ((int)(strParser / 4) - t->centerOffsetY) * blockHeight,
                 borderThickness,
-                &t->color, &wc, 0.0f);
+                &t->color, &wc);
             // Get next character
             strParser++;
         }
@@ -129,15 +129,16 @@ Tetrominoe* createTetrominoe(TetrominoeType type)
     // Create and update Vertex Array Buffer
     glGenVertexArrays(1, &t->vao);
     glGenBuffers(1, &t->vbo);
-    glBindVertexArray(t->vao);
-    glBindBuffer(GL_ARRAY_BUFFER, t->vbo);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(2*sizeof(float)));
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(6*sizeof(float)));
-    glEnableVertexAttribArray(2);
-    glBufferData(GL_ARRAY_BUFFER, TETROMINOE_VERTICES_COUNT * sizeof(Vertex), t->vertices, GL_DYNAMIC_DRAW);
+    setupVertexLayout(t->vao, t->vbo, VAO_LAYOUT_SIMPLE);
+    // glBindVertexArray(t->vao);
+    // glBindBuffer(GL_ARRAY_BUFFER, t->vbo);
+    // glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
+    // glEnableVertexAttribArray(0);
+    // glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(2*sizeof(float)));
+    // glEnableVertexAttribArray(1);
+    // glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(6*sizeof(float)));
+    // glEnableVertexAttribArray(2);
+    glBufferData(GL_ARRAY_BUFFER, TETROMINOE_VERTICES_COUNT * sizeof(VertexSimple), t->vertices, GL_DYNAMIC_DRAW);
 
     // Update uniforms proj and model
     orthoMatrix(0, graphics.screenWidth, graphics.screenHeight, 0, -1, 1, t->proj);
@@ -167,14 +168,14 @@ void rotateTetrominoe(Tetrominoe* t)
     rotateLayout(t->shapeLayout);
 }
 
-void drawTetrominoe(Tetrominoe* t, GameShader* shader)//GLint program)
+void drawTetrominoe(Tetrominoe* t, SimpleShader* shader)
 {
     if(t == NULL)
         return;
     useProgram(shader->program);
     glUniformMatrix4fv(shader->locProj, 1, GL_FALSE, t->proj);
     glUniformMatrix4fv(shader->locModel, 1, GL_FALSE, t->model);
-    glUniform1f(shader->locTime, 0.0f);
+    //glUniform1f(shader->locTime, 0.0f);
     glBindVertexArray(t->vao);
     glDrawArrays(GL_TRIANGLES, 0, TETROMINOE_VERTICES_COUNT);
 }

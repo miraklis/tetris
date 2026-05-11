@@ -14,12 +14,12 @@ typedef struct sWindow {
     uint32_t vertCount;
     GLuint vao;
     GLuint vbo;
-    Vertex* vertices;
+    VertexSimple* vertices;
 } Window;
 static_assert(offsetof(Window, base) == 0, "Window struct not aligned for base object");
 
 Window* createWindow(int wx, int wy, int width, int height, Color* backgroundColor, bool hasBorder);
-void drawWindow(Window* f, GameShader* shader);
+void drawWindow(Window* f, SimpleShader* shader);
 void addObjectToWindow(Window* f, Object* o);
 void destroyWindow(Window* f);
 

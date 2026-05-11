@@ -16,13 +16,13 @@ typedef struct sArena {
     GLuint vbo;
     float proj[16];
     float model[16];
-    Vertex* vertices;
+    VertexGlow* vertices;
 } Arena;
 static_assert(offsetof(Arena, base) == 0, "Arena struct not aligned for base object");
 
 Arena* createArena(int wx, int wy, int width, int height);
 void updateArena(Arena* f);
-void drawArena(Arena* f, GameShader* shader);
+void drawArena(Arena* f, GlowShader* shader);
 void destroyArena(Arena* f);
 
 #endif // FIELD_WINDOW_H

@@ -109,7 +109,7 @@ ScoreBoard* createScoreBoard(int wx, int wy, float fontSize)
     return sb;
 }
 
-void drawScoreBoard(ScoreBoard* sb, GameShader* gameShader, ColoredTextureShader* coloredTextureShader)
+void drawScoreBoard(ScoreBoard* sb, SimpleShader* gameShader, ColoredTextureShader* coloredTextureShader)
 {
     if(sb == NULL || !sb->visible)
         return;

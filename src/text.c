@@ -16,7 +16,7 @@ Text* createStaticText(char* str, char* fontName, float fontSize, float x, float
     t->type = TXTTYPE_STATIC;
     t->font = loadFont(fontName, fontSize);
     size_t charCount = slength(str, MAX_TEXT);//strnlen(str, MAX_TEXT);
-    t->verts = (GlyphVertex*)calloc(sizeof(GlyphVertex), 6 * charCount);
+    t->verts = (VertexGlyph*)calloc(sizeof(VertexGlyph), 6 * charCount);
 
     int count=0;
     int charIt = 0;
@@ -30,12 +30,12 @@ Text* createStaticText(char* str, char* fontName, float fontSize, float x, float
         stbtt_GetBakedQuad(
             t->font->cdata, 512, 512, c - 32,
             &xx, &yy, &q, 1);
-        t->verts[count++] = (GlyphVertex){q.x0,q.y0,q.s0,q.t0};
-        t->verts[count++] = (GlyphVertex){q.x1,q.y0,q.s1,q.t0};
-        t->verts[count++] = (GlyphVertex){q.x0,q.y1,q.s0,q.t1};
-        t->verts[count++] = (GlyphVertex){q.x0,q.y1,q.s0,q.t1};
-        t->verts[count++] = (GlyphVertex){q.x1,q.y0,q.s1,q.t0};
-        t->verts[count++] = (GlyphVertex){q.x1,q.y1,q.s1,q.t1};
+        t->verts[count++] = (VertexGlyph){q.x0,q.y0,q.s0,q.t0};
+        t->verts[count++] = (VertexGlyph){q.x1,q.y0,q.s1,q.t0};
+        t->verts[count++] = (VertexGlyph){q.x0,q.y1,q.s0,q.t1};
+        t->verts[count++] = (VertexGlyph){q.x0,q.y1,q.s0,q.t1};
+        t->verts[count++] = (VertexGlyph){q.x1,q.y0,q.s1,q.t0};
+        t->verts[count++] = (VertexGlyph){q.x1,q.y1,q.s1,q.t1};
     }
     t->vertsCount = count;
 
@@ -43,10 +43,10 @@ Text* createStaticText(char* str, char* fontName, float fontSize, float x, float
     glGenBuffers(1,&t->vbo);
     glBindVertexArray(t->vao);
     glBindBuffer(GL_ARRAY_BUFFER,t->vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(GlyphVertex)*t->vertsCount, t->verts, GL_STATIC_DRAW);
-    glVertexAttribPointer(0,2,GL_FLOAT,GL_FALSE,sizeof(GlyphVertex),(void*)0);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(VertexGlyph)*t->vertsCount, t->verts, GL_STATIC_DRAW);
+    glVertexAttribPointer(0,2,GL_FLOAT,GL_FALSE,sizeof(VertexGlyph),(void*)0);
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1,2,GL_FLOAT,GL_FALSE,sizeof(GlyphVertex),(void*)(2*sizeof(float)));
+    glVertexAttribPointer(1,2,GL_FLOAT,GL_FALSE,sizeof(VertexGlyph),(void*)(2*sizeof(float)));
     glEnableVertexAttribArray(1);
     orthoMatrix(0, 1920, 1080, 0, -1, 1, t->proj);
     translateMatrix(x, y, t->model);
@@ -63,7 +63,7 @@ Text* createText(char* str, char* fontName, float fontSize, float x, float y)
     t->base.y = y;
     t->font = loadFont(fontName, fontSize);
     memset(t->txt, 0, MAX_TEXT);
-    t->verts = (GlyphVertex*)calloc(sizeof(GlyphVertex), 6 * MAX_TEXT);
+    t->verts = (VertexGlyph*)calloc(sizeof(VertexGlyph), 6 * MAX_TEXT);
 
     int count=0;
     int charIt = 0;
@@ -77,22 +77,22 @@ Text* createText(char* str, char* fontName, float fontSize, float x, float y)
         stbtt_GetBakedQuad(
             t->font->cdata, 512, 512, c - 32,
             &xx, &yy, &q, 1);
-        t->verts[count++] = (GlyphVertex){q.x0,q.y0,q.s0,q.t0};
-        t->verts[count++] = (GlyphVertex){q.x1,q.y0,q.s1,q.t0};
-        t->verts[count++] = (GlyphVertex){q.x0,q.y1,q.s0,q.t1};
-        t->verts[count++] = (GlyphVertex){q.x0,q.y1,q.s0,q.t1};
-        t->verts[count++] = (GlyphVertex){q.x1,q.y0,q.s1,q.t0};
-        t->verts[count++] = (GlyphVertex){q.x1,q.y1,q.s1,q.t1};
+        t->verts[count++] = (VertexGlyph){q.x0,q.y0,q.s0,q.t0};
+        t->verts[count++] = (VertexGlyph){q.x1,q.y0,q.s1,q.t0};
+        t->verts[count++] = (VertexGlyph){q.x0,q.y1,q.s0,q.t1};
+        t->verts[count++] = (VertexGlyph){q.x0,q.y1,q.s0,q.t1};
+        t->verts[count++] = (VertexGlyph){q.x1,q.y0,q.s1,q.t0};
+        t->verts[count++] = (VertexGlyph){q.x1,q.y1,q.s1,q.t1};
     }
     t->vertsCount = count;
     glGenVertexArrays(1,&t->vao);
     glGenBuffers(1,&t->vbo);
     glBindVertexArray(t->vao);
     glBindBuffer(GL_ARRAY_BUFFER,t->vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(GlyphVertex) * 6 * MAX_TEXT, t->verts, GL_DYNAMIC_DRAW);
-    glVertexAttribPointer(0,2,GL_FLOAT,GL_FALSE,sizeof(GlyphVertex),(void*)0);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(VertexGlyph) * 6 * MAX_TEXT, t->verts, GL_DYNAMIC_DRAW);
+    glVertexAttribPointer(0,2,GL_FLOAT,GL_FALSE,sizeof(VertexGlyph),(void*)0);
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1,2,GL_FLOAT,GL_FALSE,sizeof(GlyphVertex),(void*)(2*sizeof(float)));
+    glVertexAttribPointer(1,2,GL_FLOAT,GL_FALSE,sizeof(VertexGlyph),(void*)(2*sizeof(float)));
     glEnableVertexAttribArray(1);
     orthoMatrix(0, graphics.screenWidth, graphics.screenHeight, 0, -1, 1, t->proj);
     translateMatrix(x, y, t->model);
@@ -119,16 +119,16 @@ void setText(Text* t, char* str)
         stbtt_GetBakedQuad(
             t->font->cdata, 512, 512, c - 32,
             &xx, &yy, &q, 1);
-        t->verts[count++] = (GlyphVertex){q.x0,q.y0,q.s0,q.t0};
-        t->verts[count++] = (GlyphVertex){q.x1,q.y0,q.s1,q.t0};
-        t->verts[count++] = (GlyphVertex){q.x0,q.y1,q.s0,q.t1};
-        t->verts[count++] = (GlyphVertex){q.x0,q.y1,q.s0,q.t1};
-        t->verts[count++] = (GlyphVertex){q.x1,q.y0,q.s1,q.t0};
-        t->verts[count++] = (GlyphVertex){q.x1,q.y1,q.s1,q.t1};
+        t->verts[count++] = (VertexGlyph){q.x0,q.y0,q.s0,q.t0};
+        t->verts[count++] = (VertexGlyph){q.x1,q.y0,q.s1,q.t0};
+        t->verts[count++] = (VertexGlyph){q.x0,q.y1,q.s0,q.t1};
+        t->verts[count++] = (VertexGlyph){q.x0,q.y1,q.s0,q.t1};
+        t->verts[count++] = (VertexGlyph){q.x1,q.y0,q.s1,q.t0};
+        t->verts[count++] = (VertexGlyph){q.x1,q.y1,q.s1,q.t1};
     }
     t->vertsCount = count;
     glBindBuffer(GL_ARRAY_BUFFER,t->vbo);
-    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(GlyphVertex)*t->vertsCount, t->verts);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(VertexGlyph)*t->vertsCount, t->verts);
 }
 
 void changeText(Text* t, int pos, char* str)
@@ -148,16 +148,16 @@ void changeText(Text* t, int pos, char* str)
         stbtt_GetBakedQuad(
             t->font->cdata, 512, 512, c - 32,
             &xx, &yy, &q, 1);
-        t->verts[count++] = (GlyphVertex){q.x0,q.y0,q.s0,q.t0};
-        t->verts[count++] = (GlyphVertex){q.x1,q.y0,q.s1,q.t0};
-        t->verts[count++] = (GlyphVertex){q.x0,q.y1,q.s0,q.t1};
-        t->verts[count++] = (GlyphVertex){q.x0,q.y1,q.s0,q.t1};
-        t->verts[count++] = (GlyphVertex){q.x1,q.y0,q.s1,q.t0};
-        t->verts[count++] = (GlyphVertex){q.x1,q.y1,q.s1,q.t1};
+        t->verts[count++] = (VertexGlyph){q.x0,q.y0,q.s0,q.t0};
+        t->verts[count++] = (VertexGlyph){q.x1,q.y0,q.s1,q.t0};
+        t->verts[count++] = (VertexGlyph){q.x0,q.y1,q.s0,q.t1};
+        t->verts[count++] = (VertexGlyph){q.x0,q.y1,q.s0,q.t1};
+        t->verts[count++] = (VertexGlyph){q.x1,q.y0,q.s1,q.t0};
+        t->verts[count++] = (VertexGlyph){q.x1,q.y1,q.s1,q.t1};
     }
     t->vertsCount = count;
     glBindBuffer(GL_ARRAY_BUFFER,t->vbo);
-    glBufferSubData(GL_ARRAY_BUFFER, sizeof(GlyphVertex) * 6 * pos, sizeof(GlyphVertex) * 6 * charIt, &t->verts[pos * 6]);
+    glBufferSubData(GL_ARRAY_BUFFER, sizeof(VertexGlyph) * 6 * pos, sizeof(VertexGlyph) * 6 * charIt, &t->verts[pos * 6]);
 }
 
 void setTextColor(Text* t, Color cl)

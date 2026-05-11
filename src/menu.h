@@ -15,8 +15,8 @@ typedef struct {
     int action;
     bool visible;
     size_t itemsCnt;
-    Vertex backgroundVertices[6];
-    Vertex barVertices[6];
+    VertexSimple backgroundVertices[6];
+    VertexSimple barVertices[6];
     Text** items;
 
     GLuint backVao;
@@ -30,7 +30,7 @@ typedef struct {
 
 Menu* createMenu(char* items, float x, float y, float fontSize);
 void handleMenuInput(const bool* currentKeyStates, Menu* menu);
-void drawMenu(Menu* menu, GameShader* gameShader, ColoredTextureShader* uiShader);
+void drawMenu(Menu* menu, SimpleShader* gameShader, ColoredTextureShader* uiShader);
 void destroyMenu(Menu* menu);
 
 #endif
