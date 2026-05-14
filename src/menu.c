@@ -116,28 +116,15 @@ Menu* createMenu(char* items, float x, float y, float fontSize)
     glGenVertexArrays(1, &m->backVao);
     glGenBuffers(1, &m->backVbo);
     setupVertexLayout(m->backVao, m->backVbo, VAO_LAYOUT_SIMPLE);
-    // glBindVertexArray(m->backVao);
-    // glBindBuffer(GL_ARRAY_BUFFER, m->backVbo);
-    // glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
-    // glEnableVertexAttribArray(0);
-    // glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(2*sizeof(float)));
-    // glEnableVertexAttribArray(1);
     glBufferData(GL_ARRAY_BUFFER, sizeof(VertexSimple) * 6, m->backgroundVertices, GL_DYNAMIC_DRAW);
 
     // Bar VAO and VBO
     glGenVertexArrays(1, &m->barVao);
     glGenBuffers(1, &m->barVbo);
     setupVertexLayout(m->barVao, m->barVbo, VAO_LAYOUT_SIMPLE);
-    // glBindVertexArray(m->barVao);
-    // glBindBuffer(GL_ARRAY_BUFFER, m->barVbo);
-    // glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
-    // glEnableVertexAttribArray(0);
-    // glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(2*sizeof(float)));
-    // glEnableVertexAttribArray(1);
     glBufferData(GL_ARRAY_BUFFER, sizeof(VertexSimple) * 6, m->barVertices, GL_DYNAMIC_DRAW);
 
-    // Projection and Model matrices
-    orthoMatrix(0, graphics.screenWidth, graphics.screenHeight, 0, -1, 1, m->proj);
+    // Model matrices
     translateMatrix(m->x, m->y, m->menuModel);
     translateMatrix(m->x, m->y, m->barModel);
 
@@ -170,27 +157,14 @@ void handleMenuInput(const bool* currentKeyStates, Menu* menu)
     memcpy(previousMenuKeyStates, currentKeyStates, SDL_SCANCODE_COUNT);    
 }
 
-void drawMenu(Menu* menu, SimpleShader* gameShader, ColoredTextureShader* uiShader)
+void drawMenu(RenderContext* ctx, Menu* menu)
 {
     if(menu == NULL || !menu->visible)
         return;
-
-    useProgram(gameShader->program);
-    glUniformMatrix4fv(gameShader->locProj, 1, GL_FALSE, menu->proj);
-
-    // Draw background
-    glUniformMatrix4fv(gameShader->locModel, 1, GL_FALSE, menu->menuModel);
-    glBindVertexArray(menu->backVao);
-    glDrawArrays(GL_TRIANGLES, 0, QUAD_VERTICES);
-    // Draw selected item bar
-    glUniformMatrix4fv(gameShader->locModel, 1, GL_FALSE, menu->barModel);
-    glBindVertexArray(menu->barVao);
-    glDrawArrays(GL_TRIANGLES, 0, QUAD_VERTICES);
-
+    renderContextQueueOject(ctx, RENDERABLE_MENU, menu);
     for(int i = 0; i < menu->itemsCnt; i++) {
-        drawText(menu->items[i], uiShader);
+        drawText(ctx, menu->items[i]);
     }
-
 }
 
 void destroyMenu(Menu* menu)

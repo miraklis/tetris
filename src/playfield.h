@@ -29,11 +29,12 @@ typedef struct sPlayField {
 
 
 PlayField* createField(int wx, int wy, unsigned char playernum, bool nextWindowPosToLeft);
+void destroyPlayField(PlayField** playField);
 void getNextTetrominoe(PlayField* f);
 void moveCurrentPiece(PlayField* f, int x, int y);
 void rotateCurrentPiece(PlayField* f);
 
-void drawField(PlayField* f, SimpleShader* shader,  GlowShader* glowShader, ColoredTextureShader* coloredTextureShader);
+void drawField(RenderContext* ctx, PlayField* playfield);
 void removeFilledLines(PlayField* f);
 int checkForFilledLines(PlayField* f, Tetrominoe* t);
 bool checkGameOver(PlayField* f);

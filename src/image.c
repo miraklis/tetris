@@ -13,7 +13,6 @@ Image* loadImage(char* path)
     if (!image->data) {
         const char* error = stbi_failure_reason();
         printf("Failed to load image: %s\n", error);
-        //free(image);
         FREE(image);
         return NULL;
     }
@@ -72,19 +71,11 @@ void moveImage(Image* img, float x, float y)
     translateMatrix(x, y, img->model);
 }
 
-void drawImage(Image* img, TextureShader* shader)
+void drawImage(RenderContext* ctx, Image* img)
 {
     if(img == NULL || !img->visible)
         return;
-    
-    useProgram(shader->program);
-    glBindVertexArray(img->vao);
-    glUniformMatrix4fv(shader->locProj, 1, GL_FALSE, img->proj);
-    glUniformMatrix4fv(shader->locModel, 1, GL_FALSE, img->model);
-    glBindTexture(GL_TEXTURE_2D, img->textureID); 
-    glActiveTexture(GL_TEXTURE0);
-    glUniform1i(shader->locTexture, 0);
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    renderContextQueueOject(ctx, RENDERABLE_IMAGE, img);
 }
 
 void destroyImage(Image* img)

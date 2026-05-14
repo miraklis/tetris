@@ -61,6 +61,22 @@ PlayField* createField(int wx, int wy, unsigned char playerNum, bool nextWindowP
     return f;
 }
 
+void destroyPlayField(PlayField** playField)
+{
+    if(*playField == NULL)
+        return;
+    destroyText((*playField)->scoreText);
+    destroyText((*playField)->statusText);
+    destroyTetrominoe((*playField)->currentPiece);
+    destroyTetrominoe((*playField)->nextPiece);
+    destroyWindow((*playField)->nextPieceWindow);
+    destroyWindow((*playField)->infoWindow);
+    destroyWindow((*playField)->playWindow);
+    destroyArena((*playField)->arena);
+    FREE((*playField)->player);
+    FREE(*playField);
+}
+
 void getNextTetrominoe(PlayField* f)
 {
     int prevX = f->nextPiece->wx;
@@ -91,20 +107,19 @@ void rotateCurrentPiece(PlayField* f)
         rotateTetrominoe(f->currentPiece);
 }
 
-void drawField(PlayField* f, SimpleShader* simpleShader, GlowShader* glowShader, ColoredTextureShader* coloredTextureShader)
+void drawField(RenderContext* ctx, PlayField* playfield)
 {
     // Draw Windows
-    drawWindow(f->playWindow, simpleShader);
-    drawWindow(f->nextPieceWindow, simpleShader);
-    drawWindow(f->infoWindow, simpleShader);
-    drawArena(f->arena, glowShader);
-    
+    drawWindow(ctx, playfield->playWindow);
+    drawWindow(ctx, playfield->nextPieceWindow);
+    drawWindow(ctx, playfield->infoWindow);
+    drawArena(ctx, playfield->arena);
     // Draw Tetrominoes
-    drawTetrominoe(f->currentPiece, simpleShader);
-    drawTetrominoe(f->nextPiece, simpleShader);
+    drawTetrominoe(ctx, playfield->currentPiece);
+    drawTetrominoe(ctx, playfield->nextPiece);
     // Draw Texts
-    drawText(f->scoreText, coloredTextureShader);
-    drawText(f->statusText, coloredTextureShader);
+    drawText(ctx, playfield->scoreText);
+    drawText(ctx, playfield->statusText);
 }
 
 // Check for filled lines (flashing '=') and remove them

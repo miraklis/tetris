@@ -7,7 +7,6 @@
 
 typedef struct sWindow {
     Object base;
-    float proj[16];
     float model[16];
     int32_t wx, wy;
     uint32_t width, height;
@@ -19,7 +18,7 @@ typedef struct sWindow {
 static_assert(offsetof(Window, base) == 0, "Window struct not aligned for base object");
 
 Window* createWindow(int wx, int wy, int width, int height, Color* backgroundColor, bool hasBorder);
-void drawWindow(Window* f, SimpleShader* shader);
+void drawWindow(RenderContext* ctx, Window *window);
 void addObjectToWindow(Window* f, Object* o);
 void destroyWindow(Window* f);
 

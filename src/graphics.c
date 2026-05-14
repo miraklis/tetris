@@ -1,4 +1,12 @@
 #include "std.h"
+#include "shaders.h"
+#include "text.h"
+#include "window.h"
+#include "arena.h"
+#include "tetrominoe.h"
+#include "menu.h"
+#include "image.h"
+#include <GLES3/gl3.h>
 #include "graphics.h"
 
 #ifndef M_PI
@@ -25,6 +33,12 @@ Graphics graphics;
 
 void initializeGraphics(void)
 {
+    SDL_Init(SDL_INIT_VIDEO);
+
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+
     int num_displays;
     graphics.displays = SDL_GetDisplays(&num_displays);
     graphics.dm = SDL_GetDesktopDisplayMode(graphics.displays[0]);
@@ -44,16 +58,192 @@ void initializeGraphics(void)
     graphics.blockWidth = (uint32_t)(graphics.screenWidth / 56.0f);
     graphics.blockHeight = (uint32_t)((graphics.screenHeight / 56.0f) * ratio);
 
-    printf("Screen: %dx%d, Block: %dx%d\n", (int)graphics.screenWidth, (int)graphics.screenHeight, graphics.blockWidth, graphics.blockHeight);
+    graphics.renderContext = createRenderContex();
 
 }
 
 void destroyGraphics(void)
 {
+    destroyRenderContext(graphics.renderContext);
     SDL_GL_DestroyContext(graphics.context);
     SDL_DestroyWindow(graphics.window);
     SDL_free(graphics.displays);
     SDL_Quit();
+}
+
+RenderContext* createRenderContex(void)
+{
+    RenderContext* ctx = (RenderContext*)malloc(sizeof(RenderContext));
+
+    ctx->lastProgram = 0;
+
+    ctx->simpleShader = createSimpleShader();
+    ctx->glowShader = createGlowShader();
+    ctx->textureShader = createTextureShader();
+    ctx->coloredTextureShader = createColoredTextureShader();
+
+    ctx->queueCount = 0;
+    ctx->queueCapacity = 64;
+    ctx->queue = (Renderable*)malloc(sizeof(Renderable) * ctx->queueCapacity);
+
+    orthoMatrix(0, graphics.screenWidth, graphics.screenHeight, 0, -1, 1, ctx->projection);
+
+    return ctx;
+}
+
+void renderContextBeginFrame(RenderContext* ctx)
+{
+    ctx->lastProgram = 0;
+    ctx->queueCount = 0;
+}
+
+void renderContextQueueOject(RenderContext* ctx, RenderableType type, void* data)
+{
+    if(ctx->queueCount >= ctx->queueCapacity) {
+        ctx->queueCapacity *= 2;
+        ctx->queue = (Renderable*)realloc(ctx->queue, ctx->queueCapacity);
+    }
+
+    ctx->queue[ctx->queueCount++] = (Renderable) {
+        .data = data,
+        .type = type
+    };
+}
+
+static int compareRenderables(const void* a, const void* b)
+{
+    Renderable* ra = (Renderable*)a;
+    Renderable* rb = (Renderable*)b;
+
+    int orderA = ra->type == RENDERABLE_IMAGE ? 0 : 
+                 ra->type == RENDERABLE_WINDOW ? 1 : 
+                 ra->type == RENDERABLE_ARENA ? 2 :
+                 ra->type == RENDERABLE_TETROMINOE ? 3 :
+                 ra->type == RENDERABLE_MENU ? 4 :
+                 ra->type == RENDERABLE_TEXT ? 5 : 6;
+    int orderB = rb->type == RENDERABLE_IMAGE ? 0 : 
+                 rb->type == RENDERABLE_WINDOW ? 1 : 
+                 rb->type == RENDERABLE_ARENA ? 2 :
+                 rb->type == RENDERABLE_TETROMINOE ? 3 :
+                 rb->type == RENDERABLE_MENU ? 4 :
+                 rb->type == RENDERABLE_TEXT ? 5 : 6;
+    return orderA - orderB;
+}
+
+void renderContextFlush(RenderContext* ctx)
+{
+    if(ctx->queueCount == 0)
+        return;
+
+    qsort(ctx->queue, ctx->queueCount, sizeof(Renderable), compareRenderables);
+
+    for(uint32_t i=0; i < ctx->queueCount; i++) {
+        Renderable* r = &ctx->queue[i];
+
+        switch(r->type) {
+            case RENDERABLE_TEXT: {
+                Text* t = (Text*)r->data;
+                ColoredTextureShader* shader = ctx->coloredTextureShader;
+                if(ctx->lastProgram != shader->program) {
+                    ctx->lastProgram = shader->program;
+                    glUseProgram(ctx->lastProgram);
+                }
+                glBindVertexArray(t->vao);
+                glUniformMatrix4fv(shader->locProj, 1, GL_FALSE, ctx->projection);
+                glUniformMatrix4fv(shader->locModel, 1, GL_FALSE, t->model);
+                glUniform3f(shader->locColor, t->color.r, t->color.g, t->color.b);
+                glActiveTexture(GL_TEXTURE0);
+                glBindTexture(GL_TEXTURE_2D, t->font->texture);
+                glUniform1i(shader->locTexture, 0);
+                glDrawArrays(GL_TRIANGLES, 0, t->vertCount);
+                break;
+            }
+            case RENDERABLE_WINDOW: {
+                Window* w = (Window*)r->data;
+                SimpleShader* shader = ctx->simpleShader;
+                if(ctx->lastProgram != shader->program) {
+                    ctx->lastProgram = shader->program;
+                    glUseProgram(ctx->lastProgram);
+                }
+                glUniformMatrix4fv(shader->locProj, 1, GL_FALSE, ctx->projection);
+                glUniformMatrix4fv(shader->locModel, 1, GL_FALSE, w->model);
+                glBindVertexArray(w->vao);
+                glDrawArrays(GL_TRIANGLES, 0, w->vertCount);                
+                break;
+            }
+            case RENDERABLE_ARENA: {
+                Arena* a = (Arena*)r->data;
+                GlowShader* shader = ctx->glowShader;
+                if(ctx->lastProgram != shader->program) {
+                    ctx->lastProgram = shader->program;
+                    glUseProgram(ctx->lastProgram);
+                }
+                glUniformMatrix4fv(shader->locProj, 1, GL_FALSE, ctx->projection);
+                glUniformMatrix4fv(shader->locModel, 1, GL_FALSE, a->model);
+                float tm = SDL_GetTicks() / 200.0f;
+                glUniform1f(shader->locTime, tm);
+                glBindVertexArray(a->vao);
+                glDrawArrays(GL_TRIANGLES, 0, a->vertCount);
+                break;
+            }
+            case RENDERABLE_TETROMINOE: {
+                Tetrominoe* t = (Tetrominoe*)r->data;
+                SimpleShader* shader = ctx->simpleShader;
+                if(ctx->lastProgram != shader->program) {
+                    ctx->lastProgram = shader->program;
+                    glUseProgram(ctx->lastProgram);
+                }
+                glUniformMatrix4fv(shader->locProj, 1, GL_FALSE, ctx->projection);
+                glUniformMatrix4fv(shader->locModel, 1, GL_FALSE, t->model);
+                glBindVertexArray(t->vao);
+                glDrawArrays(GL_TRIANGLES, 0, TETROMINOE_VERTICES_COUNT);                
+                break;
+            }
+            case RENDERABLE_MENU: {
+                Menu* m = (Menu*)r->data;
+                SimpleShader* shader = ctx->simpleShader;
+                if(ctx->lastProgram != shader->program) {
+                    ctx->lastProgram = shader->program;
+                    glUseProgram(ctx->lastProgram);
+                }
+                glUniformMatrix4fv(shader->locModel, 1, GL_FALSE, m->menuModel);
+                glBindVertexArray(m->backVao);
+                glDrawArrays(GL_TRIANGLES, 0, QUAD_VERTICES);
+                glUniformMatrix4fv(shader->locModel, 1, GL_FALSE, m->barModel);
+                glBindVertexArray(m->barVao);
+                glDrawArrays(GL_TRIANGLES, 0, QUAD_VERTICES);
+                break;
+            }
+            case RENDERABLE_IMAGE: {
+                Image* img = (Image*)r->data;
+                TextureShader* shader = ctx->textureShader;
+                if(ctx->lastProgram != shader->program) {
+                    ctx->lastProgram = shader->program;
+                    glUseProgram(ctx->lastProgram);
+                }
+                glBindVertexArray(img->vao);
+                glUniformMatrix4fv(shader->locProj, 1, GL_FALSE, img->proj);
+                glUniformMatrix4fv(shader->locModel, 1, GL_FALSE, img->model);
+                glBindTexture(GL_TEXTURE_2D, img->textureID); 
+                glActiveTexture(GL_TEXTURE0);
+                glUniform1i(shader->locTexture, 0);
+                glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+                break;
+            }
+            default:
+                break;
+        }
+    }
+}
+
+void destroyRenderContext(RenderContext* ctx)
+{
+    destroySimpleShader(ctx->simpleShader);
+    destroyGlowShader(ctx->glowShader);
+    destroyTextureShader(ctx->textureShader);
+    destroyColoredTextureShader(ctx->coloredTextureShader);
+    FREE(ctx->queue);
+    FREE(ctx);
 }
 
 void setupVertexLayout(GLuint vao, GLuint vbo, VertexLayout layout)

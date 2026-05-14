@@ -1,4 +1,3 @@
-//#include "fieldWindow.h"
 #include "std.h"
 #include "graphics.h"
 #include "shaders.h"
@@ -10,7 +9,6 @@
 #include "menu.h"
 #include "image.h"
 #include "scoreboard.h"
-//#include <SDL3/SDL_video.h>
 
 #define TARGET_FPS 60
 #define FRAME_DELAY (1000 / TARGET_FPS)
@@ -35,21 +33,10 @@ typedef struct Game {
     Text* labelStatusMessage;
 } Game;
 
-void freeGameObjects(PlayField* field[MAX_PLAYERS])
+static void clearFields(PlayField** field)
 {
     for(int i=0; i < MAX_PLAYERS; i++) {
-        if(field[i] != NULL) {
-            destroyText(field[i]->scoreText);
-            destroyText(field[i]->statusText);
-            destroyTetrominoe(field[i]->currentPiece);
-            destroyTetrominoe(field[i]->nextPiece);
-            destroyWindow(field[i]->nextPieceWindow);
-            destroyWindow(field[i]->infoWindow);
-            destroyWindow(field[i]->playWindow);
-            destroyArena(field[i]->arena);
-            FREE(field[i]->player);
-            FREE(field[i]);
-        }
+        destroyPlayField(&field[i]);
     }
 }
 
@@ -163,68 +150,42 @@ void readInput(const bool* currentKeyStates, bool keyPress[11])
 int main(int argc, char** argv)
 {
     // ************************
-    // Init SDL and Window
+    // Initialize Graphics
     // ************************
-    SDL_Init(SDL_INIT_VIDEO);
-
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-
     initializeGraphics();
     float screenWidth = graphics.dm->w;
     float screenHeight = graphics.dm->h;
-
-    // int num_displays;
-    // SDL_DisplayID *displays = SDL_GetDisplays(&num_displays);
-    // dm = SDL_GetDesktopDisplayMode(displays[0]);
+    RenderContext* renderContext = graphics.renderContext;
     
-    // SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl");
-    // float wWidth = dm->w;
-    // float wHeight = dm->h;
-    // SDL_Window* window= SDL_CreateWindow("Tetris", wWidth, wHeight, SDL_WINDOW_OPENGL | SDL_WINDOW_FULLSCREEN);
-    // SDL_GLContext context = SDL_GL_CreateContext(window);
-    // SDL_GL_SetSwapInterval(1);
-    // glViewport(0, 0, wWidth, wHeight);
-
-    // glEnable(GL_BLEND);
-    // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);    
-
-    srand(time(NULL));
-
-    // ************************
-    // Create Shaders
-    // ************************    
-    SimpleShader* simpleShader = createSimpleShader();
-    GlowShader* glowShader = createGlowShader();
-    TextureShader* textureShader = createTextureShader();
-    ColoredTextureShader* coloredTextureShader = createColoredTextureShader();
-
     // ***************************
     // Create and initialize game
     // ***************************
-
+    // Game struct to keep status of the game and global objects
     Game game;
     game.gameState = game.lastState = GameState_InMenu;
     game.running = true;
     game.labelStatusMessage = createText("GAME OVER !!!", FONT, 44.0f, screenWidth / 2.0f - (6 * 48.0f), 48.0f);
     setTextColor(game.labelStatusMessage, palette.colorRed);
     game.labelStatusMessage->visible = false;
-
+    // Background image
     Image* splash_screen = loadImage("assets/splash_screen.jpg");
-
+    // Main menu
     Menu* menu;
     menu = createMenu("1 PLAYER GAME|2 PLAYER GAME|EXIT|", screenWidth / 2.0f, screenHeight / 5.0f, 24.0f);
-
+    // Playfields (MAX 2)
     PlayField* field[MAX_PLAYERS];
     for(int i=0; i < MAX_PLAYERS; i++) {
         field[i] = NULL;
     }
-    
+    // Scoreboard
     size_t sbFontSize = 22.0f;
     ScoreBoard* scoreBoard = createScoreBoard(20, 10, sbFontSize);
     scoreBoard->visible = true;
 
+    // ***************
+    // Main Loop
+    // ***************
+    srand(time(NULL));
     bool keyPress[11] = {0};
     SDL_Event ev;
     while(game.running) {
@@ -269,7 +230,7 @@ int main(int argc, char** argv)
         }
         // Start 1 Player game
         if(menu->action == 1) { // 1 player game
-            freeGameObjects(field);
+            clearFields(field);
             field[0] = createField(1, 0, 1, false);
             game.gameState = GameState_Playing;
             menu->visible = false;
@@ -278,7 +239,7 @@ int main(int argc, char** argv)
         }
         // Start 2 Player game
         if(menu->action == 2) { // 2 player game
-            freeGameObjects(field);
+            clearFields(field);
             field[0] = createField((int)(screenWidth / graphics.blockWidth) - FIELD_WIDTH - 1, 0, 1, true);
             field[1] = createField(1, 0, 2, false);
             game.gameState = GameState_Playing;
@@ -379,7 +340,6 @@ int main(int argc, char** argv)
                         field[i]->glowEffect = true;
                         field[i]->lastGlowTick = SDL_GetTicks();
                         field[i]->player->playerState = PlayerState_Paused;
-                        //removeFilledLines(field[i]);                        
                     } else {
                         player->playerScore += PIECE_DOWN_SCORE;
                     }
@@ -412,21 +372,21 @@ int main(int argc, char** argv)
         // ************************
         // RENDER
         // ************************
+        renderContextBeginFrame(renderContext);
         glClearColor(0.0f,0.0f,0.0f,1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
-
-        drawImage(splash_screen, textureShader);
-        
+        drawImage(renderContext, splash_screen);
         int cnt = 0;
         while(cnt < MAX_PLAYERS && field[cnt] != NULL) {
-            drawField(field[cnt], simpleShader, glowShader, coloredTextureShader);
+            drawField(renderContext, field[cnt]);
             cnt++;
         }
+        drawText(renderContext, game.labelStatusMessage);
+        drawScoreBoard(renderContext, scoreBoard);
+        drawMenu(renderContext, menu);
 
-        drawText(game.labelStatusMessage, coloredTextureShader);
-        drawScoreBoard(scoreBoard, simpleShader, coloredTextureShader);
-        drawMenu(menu, simpleShader, coloredTextureShader);
-
+        // Flush render queue (output) to screen
+        renderContextFlush(renderContext);
         SDL_GL_SwapWindow(graphics.window);
 
         // Calcuation for fixed FPS
@@ -437,22 +397,13 @@ int main(int argc, char** argv)
     }
 
     // Cleanup
-    freeGameObjects(field);
+    clearFields(field);
     destroyScoreBoard(scoreBoard);
     destroyText(game.labelStatusMessage);
     destroyMenu(menu);
     destroyImage(splash_screen);
-    destroySimpleShader(simpleShader);
-    destroyGlowShader(glowShader);
-    destroyTextureShader(textureShader);
-    destroyColoredTextureShader(coloredTextureShader);
     destroyFontCache();
     destroyGraphics();
-
-    // SDL_GL_DestroyContext(context);
-    // SDL_DestroyWindow(window);
-    // SDL_free(displays);
-    // SDL_Quit();
 
     return 0;
 }

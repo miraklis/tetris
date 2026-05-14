@@ -109,15 +109,15 @@ ScoreBoard* createScoreBoard(int wx, int wy, float fontSize)
     return sb;
 }
 
-void drawScoreBoard(ScoreBoard* sb, SimpleShader* gameShader, ColoredTextureShader* coloredTextureShader)
+void drawScoreBoard(RenderContext* ctx, ScoreBoard* sb)
 {
     if(sb == NULL || !sb->visible)
         return;
 
-    drawWindow(sb->window, gameShader);
+    drawWindow(ctx, sb->window);
     for(int i = 0; i < MAX_SCORES; i++) {
         if(sb->items[i] != NULL) {
-            drawText(sb->items[i], coloredTextureShader);
+            drawText(ctx, sb->items[i]);
         }
     }
 }

@@ -9,7 +9,7 @@ typedef struct sImage {
     int width;
     int height;
     int channels;
-    float proj[16];
+    float proj[16]; // Image has a reverse Y so we keep it here
     float model[16];
     bool visible;
     unsigned char* data;
@@ -22,7 +22,7 @@ typedef struct sImage {
 
 Image* loadImage(char* path);
 void moveImage(Image* img, float x, float y);
-void drawImage(Image* img, TextureShader* shader);
+void drawImage(RenderContext* ctx, Image* img);
 void destroyImage(Image* img);
 
 #endif // IMAGE_H

@@ -5,8 +5,6 @@
 #include "graphics.h"
 #include "shaders.h"
 #include "fonts.h"
-//#include <cstring>
-//#include "stb_truetype.h"
 
 #define MAX_TEXT 256
 
@@ -20,10 +18,9 @@ typedef struct Text {
     Object base;
     enum TextType type;
     bool visible;
-    float proj[16];
     float model[16];
     Color color;
-    size_t vertsCount;
+    uint32_t vertCount;
     Font* font;
     char txt[MAX_TEXT];
 
@@ -43,6 +40,6 @@ void setText(Text* t, char* str);
 void changeText(Text* t, int pos, char* str);
 void setTextColor(Text* t, Color cl);//float r, float g, float b);
 void destroyText(Text* t);
-void drawText(Text* t, ColoredTextureShader* shader);
+void drawText(RenderContext* ctx, Text* text);
 
 #endif // TEXT_H

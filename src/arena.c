@@ -110,30 +110,17 @@ Arena* createArena(int wx, int wy, int width, int height)
     glGenVertexArrays(1, &f->vao);
     glGenBuffers(1, &f->vbo);
     setupVertexLayout(f->vao, f->vbo, VAO_LAYOUT_GLOW);
-    // glBindVertexArray(f->vao);
-    // glBindBuffer(GL_ARRAY_BUFFER, f->vbo);
-    // glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
-    // glEnableVertexAttribArray(0);
-    // glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(2*sizeof(float)));
-    // glEnableVertexAttribArray(1);
-    // glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(6*sizeof(float)));
-    // glEnableVertexAttribArray(2);
     glBufferData(GL_ARRAY_BUFFER, f->vertCount * sizeof(VertexGlow), f->vertices, GL_DYNAMIC_DRAW);
     
-    orthoMatrix(0, graphics.screenWidth, graphics.screenHeight, 0, -1, 1, f->proj);
     translateMatrix(f->base.x, f->base.y, f->model);
 
     return f;
 }
 
-void drawArena(Arena *f, GlowShader *shader) {
-    useProgram(shader->program);
-    glUniformMatrix4fv(shader->locProj, 1, GL_FALSE, f->proj);
-    glUniformMatrix4fv(shader->locModel, 1, GL_FALSE, f->model);
-    float tm = SDL_GetTicks() / 200.0f;
-    glUniform1f(shader->locTime, tm);
-    glBindVertexArray(f->vao);
-    glDrawArrays(GL_TRIANGLES, 0, f->vertCount);
+void drawArena(RenderContext* ctx, Arena* arena)
+{
+    
+    renderContextQueueOject(ctx, RENDERABLE_ARENA, arena);
 }
 
 void destroyArena(Arena* f)

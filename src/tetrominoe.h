@@ -21,7 +21,6 @@ typedef enum {
 typedef struct sTetrominoe {
     Object base;
     VertexSimple vertices[TETROMINOE_VERTICES_COUNT];
-    float proj[16];
     float model[16];
     char shapeLayout[17];
     Color color;
@@ -41,7 +40,7 @@ void moveTetrominoe(int x, int y, Tetrominoe* t);
 void placeTetrominoe(int x, int y, Tetrominoe* t);
 void rotateLayout(char* layout);
 void rotateTetrominoe(Tetrominoe* t);
-void drawTetrominoe(Tetrominoe* t, SimpleShader* shader);
+void drawTetrominoe(RenderContext* ctx, Tetrominoe* tetrominoe);
 void destroyTetrominoe(Tetrominoe* t);
 
 #endif // TETROMINOE_H

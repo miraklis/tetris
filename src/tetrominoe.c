@@ -130,18 +130,10 @@ Tetrominoe* createTetrominoe(TetrominoeType type)
     glGenVertexArrays(1, &t->vao);
     glGenBuffers(1, &t->vbo);
     setupVertexLayout(t->vao, t->vbo, VAO_LAYOUT_SIMPLE);
-    // glBindVertexArray(t->vao);
-    // glBindBuffer(GL_ARRAY_BUFFER, t->vbo);
-    // glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
-    // glEnableVertexAttribArray(0);
-    // glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(2*sizeof(float)));
-    // glEnableVertexAttribArray(1);
-    // glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(6*sizeof(float)));
-    // glEnableVertexAttribArray(2);
     glBufferData(GL_ARRAY_BUFFER, TETROMINOE_VERTICES_COUNT * sizeof(VertexSimple), t->vertices, GL_DYNAMIC_DRAW);
 
-    // Update uniforms proj and model
-    orthoMatrix(0, graphics.screenWidth, graphics.screenHeight, 0, -1, 1, t->proj);
+    // Update model
+    //orthoMatrix(0, graphics.screenWidth, graphics.screenHeight, 0, -1, 1, t->proj);
     updateModelMatrix(t);
 
     return t;
@@ -168,16 +160,11 @@ void rotateTetrominoe(Tetrominoe* t)
     rotateLayout(t->shapeLayout);
 }
 
-void drawTetrominoe(Tetrominoe* t, SimpleShader* shader)
+void drawTetrominoe(RenderContext* ctx, Tetrominoe* tetrominoe)
 {
-    if(t == NULL)
+    if(tetrominoe == NULL)
         return;
-    useProgram(shader->program);
-    glUniformMatrix4fv(shader->locProj, 1, GL_FALSE, t->proj);
-    glUniformMatrix4fv(shader->locModel, 1, GL_FALSE, t->model);
-    //glUniform1f(shader->locTime, 0.0f);
-    glBindVertexArray(t->vao);
-    glDrawArrays(GL_TRIANGLES, 0, TETROMINOE_VERTICES_COUNT);
+    renderContextQueueOject(ctx, RENDERABLE_TETROMINOE, tetrominoe);
 }
 
 void rotateLayout(char layout[17]) {
@@ -197,6 +184,4 @@ void destroyTetrominoe(Tetrominoe* t)
     glDeleteVertexArrays(1, &t->vao);
     glDeleteBuffers(1, &t->vbo);
     FREE(t);
-    // free(t);
-    // t=NULL;
 }
